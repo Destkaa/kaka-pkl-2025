@@ -1,46 +1,54 @@
 <?php
 // ========================================
 // FILE: routes/web.php
-// FUNGSI: Mendefinisikan URL routes aplikasi
+// FUNGSI: Mendefinisikan semua URL route aplikasi
 // ========================================
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\ProfileController;
 
-// Route default (sudah ada)
+// ================================================
+// ROUTE PUBLIK (Bisa diakses siapa saja)
+// ================================================
 Route::get('/', function () {
     return view('welcome');
 });
+// ↑ Halaman utama, tidak perlu login
 
 // ================================================
-// TUGAS: Tambahkan route baru di bawah ini
+// AUTH ROUTES
 // ================================================
+// Auth::routes() adalah "shortcut" yang membuat banyak route sekaligus:
+// - GET  /login           → Tampilkan form login
+// - POST /login           → Proses login
+// - POST /logout          → Proses logout
+// - GET  /register        → Tampilkan form register
+// - POST /register        → Proses register
+// - GET  /password/reset  → Tampilkan form lupa password
+// - POST /password/email  → Kirim email reset password
+// - dll...
+// ================================================
+Auth::routes();
 
-Route::get('/tentang', function () {
-    // ================================================
-    // Route::get() = Tangani HTTP GET request
-    // '/tentang'   = URL yang akan dihandle
-    // function     = Kode yang dijalankan saat URL diakses
-    // ================================================
+// ================================================
+// ROUTE YANG MEMERLUKAN LOGIN
+// ================================================
+// middleware('auth') = Harus login dulu untuk akses
+// Jika belum login, otomatis redirect ke /login
+// ================================================
+Route::middleware('auth')->group(function () {
+    // Semua route di dalam group ini HARUS LOGIN
 
-    return view('tentang');
-    // ↑ return view('tentang') = Tampilkan file tentang.blade.php
-    // ↑ Laravel akan mencari di: resources/views/tentang.blade.php
-});
+    Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])
+        ->name('home');
+    // ↑ ->name('home') = Memberi nama route
+    // Kegunaan: route('home') akan menghasilkan URL /home
 
-Route::get('/sapa/{nama}', function ($nama) {
-    // ↑ '/sapa/{nama}' = URL pattern
-    // ↑ {nama}         = Parameter dinamis, nilainya dari URL
-    // ↑ function($nama) = Parameter diterima di function
+    Route::get('/profile', [ProfileController::class, 'edit'])
+        ->name('profile.edit');
 
-    return "Halo, $nama! Selamat datang di Toko Online.";
-    // ↑ "$nama" = Variable interpolation (masukkan nilai $nama ke string)
-});
-
-Route::get('/sapa/{semua?}', function ($nama = "semua") {
-    // ↑ '/sapa/{nama}' = URL pattern
-    // ↑ {nama}         = Parameter dinamis, nilainya dari URL
-    // ↑ function($nama) = Parameter diterima di function
-
-    return "Halo, $nama! Selamat datang di Toko Online.";
-    // ↑ "$nama" = Variable interpolation (masukkan nilai $nama ke string)
+    Route::put('/profile', [ProfileController::class, 'update'])
+        ->name('profile.update');
+        
 });
