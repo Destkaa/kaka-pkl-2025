@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage; // ✅ FIX ERROR DI SINI
 
 class User extends Authenticatable
 {
@@ -13,7 +14,6 @@ class User extends Authenticatable
 
     /**
      * Kolom yang boleh diisi secara mass-assignment.
-     * Ini mencegah vulnerability mass-assignment.
      */
     protected $fillable = [
         'name',
@@ -21,11 +21,13 @@ class User extends Authenticatable
         'password',
         'role',
         'avatar',
-        'google_id', 
+        'google_id',
+        'phone',
+        'address',
     ];
 
     /**
-     * Kolom yang disembunyikan saat serialisasi ke JSON/array.
+     * Kolom yang disembunyikan saat serialisasi.
      */
     protected $hidden = [
         'password',
@@ -45,33 +47,21 @@ class User extends Authenticatable
 
     // ==================== RELATIONSHIPS ====================
 
-    /**
-     * User memiliki satu keranjang aktif.
-     */
     public function cart()
     {
         return $this->hasOne(Cart::class);
     }
 
-    /**
-     * User memiliki banyak item wishlist.
-     */
     public function wishlists()
     {
         return $this->hasMany(Wishlist::class);
     }
 
-    /**
-     * User memiliki banyak pesanan.
-     */
     public function orders()
     {
         return $this->hasMany(Order::class);
     }
 
-    /**
-     * Relasi many-to-many ke products melalui wishlists.
-     */
     public function wishlistProducts()
     {
         return $this->belongsToMany(Product::class, 'wishlists')
@@ -80,29 +70,57 @@ class User extends Authenticatable
 
     // ==================== HELPER METHODS ====================
 
-    /**
-     * Cek apakah user adalah admin.
-     */
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
     }
 
-    /**
-     * Cek apakah user adalah customer.
-     */
     public function isCustomer(): bool
     {
         return $this->role === 'customer';
     }
 
-    /**
-     * Cek apakah produk ada di wishlist user.
-     */
     public function hasInWishlist(Product $product): bool
     {
         return $this->wishlists()
                     ->where('product_id', $product->id)
                     ->exists();
+    }
+
+    // ==================== ACCESSORS ====================
+
+    /**
+     * Avatar URL accessor
+     */
+    public function getAvatarUrlAttribute(): string
+    {
+        // 1. Avatar upload lokal
+        if ($this->avatar && Storage::disk('public')->exists($this->avatar)) {
+            return asset('storage/' . $this->avatar);
+        }
+
+        // 2. Avatar dari Google / URL eksternal
+        if (str_starts_with($this->avatar ?? '', 'http')) {
+            return $this->avatar;
+        }
+
+        // 3. Fallback Gravatar
+        $hash = md5(strtolower(trim($this->email)));
+        return "https://www.gravatar.com/avatar/{$hash}?d=mp&s=200";
+    }
+
+    /**
+     * Inisial nama user
+     */
+    public function getInitialsAttribute(): string
+    {
+        $words = explode(' ', $this->name);
+        $initials = '';
+
+        foreach ($words as $word) {
+            $initials .= strtoupper(substr($word, 0, 1));
+        }
+
+        return substr($initials, 0, 2);
     }
 }
