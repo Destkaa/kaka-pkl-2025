@@ -28,6 +28,7 @@
 
     {{-- Stack untuk CSS tambahan per halaman --}}
     @stack('styles')
+
 </head>
 <body>
     {{-- ============================================
@@ -56,5 +57,7 @@
 
     {{-- Stack untuk JS tambahan per halaman --}}
     @stack('scripts')
+
+
 </body>
 </html>

@@ -9,27 +9,61 @@
 
 @section('content')
     {{-- Hero Section --}}
-    <section class="bg-primary text-white py-5">
-        <div class="container">
-            <div class="row align-items-center">
+    <section class="bg-light py-5">
+        <div class="container py-5">
+            <div class="row align-items-center gy-4">
+
+                <!-- Text -->
                 <div class="col-lg-6">
-                    <h1 class="display-4 fw-bold mb-3">
-                        Belanja Online Mudah & Terpercaya
-                    </h1>
-                    <p class="lead mb-4">
-                        Temukan berbagai produk berkualitas dengan harga terbaik.
-                        Gratis ongkir untuk pembelian pertama!
-                    </p>
-                    <a href="{{ route('catalog.index') }}" class="btn btn-light btn-lg">
-                        <i class="bi bi-bag me-2"></i>Mulai Belanja
+                <span class="badge bg-warning text-dark mb-3 px-3 py-2">
+                    🔥 Promo Spesial
+                </span>
+
+                <h1 class="display-5 fw-bold mb-3">
+                    Belanja Online <span class="text-primary">Mudah</span> <br>
+                    & <span class="text-success">Terpercaya</span>
+                </h1>
+
+                <p class="lead text-muted mb-4">
+                    Temukan berbagai produk <b>berkualitas</b> dengan harga terbaik.
+                    <span class="text-danger fw-semibold">Gratis ongkir</span> untuk pembelian pertama!
+                </p>
+
+                <div class="d-flex gap-3 flex-wrap">
+                    <a href="{{ route('catalog.index') }}" class="btn btn-primary btn-lg shadow">
+                    <i class="bi bi-bag-check me-2"></i> Mulai Belanja
+                    </a>
+
+                    <a href="#promo" class="btn btn-outline-secondary btn-lg">
+                    <i class="bi bi-lightning-charge me-2"></i>Lihat Promo
                     </a>
                 </div>
-                <div class="col-lg-6 d-none d-lg-block text-center">
-                    <img src="{{ asset('images/hero-shopping.svg') }}"
-                         alt="Shopping" class="img-fluid" style="max-height: 400px;">
+
+                <!-- Trust info -->
+                <div class="d-flex gap-4 mt-4 text-muted small">
+                    <div>
+                    <i class="bi bi-shield-check text-success me-1"></i> Aman & Terpercaya
+                    </div>
+                    <div>
+                    <i class="bi bi-truck text-primary me-1"></i> Pengiriman Cepat
+                    </div>
+                    <div>
+                    <i class="bi bi-star-fill text-warning me-1"></i> Rating Tinggi
+                    </div>
                 </div>
+                </div>
+
+                <!-- Image -->
+                <div class="col-lg-6 d-none d-lg-block text-center">
+                <img src="{{ asset('images/hero-shopping.svg') }}"
+                    alt="Shopping"
+                    class="img-fluid floating"
+                    style="max-height: 420px;">
+                </div>
+
             </div>
         </div>
+
     </section>
 
     {{-- Kategori --}}
@@ -122,3 +156,15 @@
         </div>
     </section>
 @endsection
+
+<style>
+  .floating {
+    animation: float 4s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+    100% { transform: translateY(0); }
+  }
+</style>

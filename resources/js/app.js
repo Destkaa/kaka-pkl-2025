@@ -2,7 +2,6 @@
 // FILE: resources/js/app.js
 // FUNGSI: Entry point untuk semua JavaScript
 // ================================================
-import './bootstrap';
 
 // Import Bootstrap JS (untuk dropdown, modal, dll)
 import * as bootstrap from "bootstrap";
