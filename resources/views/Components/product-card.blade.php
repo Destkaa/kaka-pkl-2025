@@ -7,9 +7,9 @@
              class="card-img-top position-absolute top-0 start-0 w-100 h-100 object-fit-cover">
 
         @if($product->has_discount)
-             <span class="position-absolute top-0 start-0 m-2 badge bg-danger">
-                 -{{ $product->discount_percentage }}%
-             </span>
+            <span class="position-absolute top-0 start-0 m-2 badge bg-danger">
+                -{{ $product->discount_percentage }}%
+            </span>
         @endif
     </div>
 
@@ -29,5 +29,12 @@
                 <p class="fw-bold text-primary mb-0">{{ $product->formatted_price }}</p>
             @endif
         </div>
+
+        {{-- SLOT UNTUK TOMBOL AKSI (wishlist, keranjang, dll) --}}
+        @isset($slot)
+            <div class="mt-2">
+                {{ $slot }}
+            </div>
+        @endisset
     </div>
 </div>

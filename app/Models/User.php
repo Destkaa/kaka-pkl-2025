@@ -11,6 +11,9 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
+    /**
+     * Kolom yang boleh diisi
+     */
     protected $fillable = [
         'name',
         'email',
@@ -22,11 +25,17 @@ class User extends Authenticatable
         'address',
     ];
 
+    /**
+     * Kolom tersembunyi
+     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
+    /**
+     * Casting otomatis
+     */
     protected function casts(): array
     {
         return [
@@ -35,38 +44,13 @@ class User extends Authenticatable
         ];
     }
 
-    // ================= RELATIONSHIPS =================
+    // ==================================================
+    // RELATIONSHIPS
+    // ==================================================
 
     public function cart()
     {
         return $this->hasOne(Cart::class);
-    }
-
-    /**
-     * RELASI UTAMA WISHLIST
-     * Pivot table: wishlists (user_id, product_id)
-     */
-    public function wishlist()
-    {
-        return $this->belongsToMany(Product::class, 'wishlists')
-                    ->withTimestamps();
-    }
-
-    /**
-     * ALIAS — supaya kode lama TIDAK ERROR
-     * (Controller / Blade kamu masih pakai wishlists())
-     */
-    public function wishlists()
-    {
-        return $this->wishlist();
-    }
-
-    /**
-     * ALIAS — kalau ada yang pakai wishlistProducts()
-     */
-    public function wishlistProducts()
-    {
-        return $this->wishlist();
     }
 
     public function orders()
@@ -74,27 +58,63 @@ class User extends Authenticatable
         return $this->hasMany(Order::class);
     }
 
-    // ================= HELPERS =================
+    // ==================================================
+    // WISHLIST
+    // ==================================================
 
+    // Pivot wishlist
+    public function wishlists()
+    {
+        return $this->belongsToMany(Product::class, 'wishlists')
+                    ->withTimestamps();
+    }
+
+    // Alias
+    public function wishlist()
+    {
+        return $this->wishlists();
+    }
+
+    // Alias legacy
+    public function wishlistProducts()
+    {
+        return $this->wishlists();
+    }
+
+    // Cek produk ada di wishlist
     public function hasInWishlist(Product $product): bool
     {
-        return $this->wishlist()
+        return $this->wishlists()
                     ->where('product_id', $product->id)
                     ->exists();
     }
 
-    // ================= ACCESSORS =================
+    // ==================================================
+    // HELPERS
+    // ==================================================
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    // ==================================================
+    // ACCESSORS
+    // ==================================================
 
     public function getAvatarUrlAttribute(): string
     {
+        // Avatar upload lokal
         if ($this->avatar && Storage::disk('public')->exists($this->avatar)) {
             return asset('storage/' . $this->avatar);
         }
 
+        // Avatar dari Google / URL eksternal
         if (str_starts_with($this->avatar ?? '', 'http')) {
             return $this->avatar;
         }
 
+        // Fallback Gravatar
         $hash = md5(strtolower(trim($this->email)));
         return "https://www.gravatar.com/avatar/{$hash}?d=mp&s=200";
     }
