@@ -6,7 +6,6 @@
 @extends('layouts.admin')
 
 @section('title', 'Dashboard')
-@section('title', 'Dashboard')
 @section('page-title', 'Dashboard')
 
 @section('content')
@@ -19,7 +18,9 @@
                     <div class="d-flex justify-content-between">
                         <div>
                             <p class="text-muted mb-1">Total Pendapatan</p>
-                            <h4 class="mb-0">Rp {{ number_format($stats['total_revenue'], 0, ',', '.') }}</h4>
+                            <h4 class="mb-0">
+                                Rp {{ number_format($stats['total_revenue'], 0, ',', '.') }}
+                            </h4>
                         </div>
                         <div class="bg-success bg-opacity-10 rounded p-3">
                             <i class="bi bi-currency-dollar text-success fs-4"></i>
@@ -84,10 +85,12 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">Pesanan Terbaru</h5>
-                    <a href="{{ route('admin.orders.index') }}" class="btn btn-sm btn-outline-primary">
+                    <a href="{{ route('admin.orders.index') }}"
+                       class="btn btn-sm btn-outline-primary">
                         Lihat Semua
                     </a>
                 </div>
+
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-hover mb-0">
@@ -101,7 +104,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($recentOrders as $order)
+                                @foreach ($recentOrders as $order)
                                     <tr>
                                         <td>
                                             <a href="{{ route('admin.orders.show', $order) }}">
@@ -109,7 +112,9 @@
                                             </a>
                                         </td>
                                         <td>{{ $order->user->name }}</td>
-                                        <td>Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
+                                        <td>
+                                            Rp {{ number_format($order->total_amount, 0, ',', '.') }}
+                                        </td>
                                         <td>
                                             <span class="badge bg-{{ $order->status_color }}">
                                                 {{ ucfirst($order->status) }}

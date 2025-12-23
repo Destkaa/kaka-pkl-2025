@@ -1,61 +1,86 @@
-<p class="text-muted small">Perbarui informasi profil dan alamat email kamu.</p>
+{{-- resources/views/profile/partials/update-profile-information-form.blade.php --}}
 
-<form method="post" action="{{ route('profile.update') }}">
+<form method="POST" action="{{ route('profile.update') }}">
     @csrf
     @method('patch')
 
     {{-- Nama --}}
     <div class="mb-3">
         <label for="name" class="form-label">Nama Lengkap</label>
-        <input type="text"
-               name="name"
-               id="name"
-               class="form-control @error('name') is-invalid @enderror"
-               value="{{ old('name', $user->name) }}"
-               required autofocus>
+        <input
+            id="name"
+            type="text"
+            name="name"
+            class="form-control @error('name') is-invalid @enderror"
+            value="{{ old('name', $user->name) }}"
+            required
+            autocomplete="name"
+        >
+
         @error('name')
-            <div class="invalid-feedback">{{ $message }}</div>
+            <div class="invalid-feedback">
+                {{ $message }}
+            </div>
         @enderror
     </div>
 
     {{-- Email --}}
     <div class="mb-3">
         <label for="email" class="form-label">Email</label>
-        <input type="email"
-               name="email"
-               id="email"
-               class="form-control @error('email') is-invalid @enderror"
-               value="{{ old('email', $user->email) }}"
-               required>
+        <input
+            id="email"
+            type="email"
+            name="email"
+            class="form-control @error('email') is-invalid @enderror"
+            value="{{ old('email', $user->email) }}"
+            required
+            autocomplete="email"
+        >
+
         @error('email')
-            <div class="invalid-feedback">{{ $message }}</div>
+            <div class="invalid-feedback">
+                {{ $message }}
+            </div>
         @enderror
     </div>
 
-    {{-- Phone --}}
+    {{-- Nomor Telepon --}}
     <div class="mb-3">
         <label for="phone" class="form-label">Nomor Telepon</label>
-        <input type="tel"
-               name="phone"
-               id="phone"
-               class="form-control @error('phone') is-invalid @enderror"
-               value="{{ old('phone', $user->phone) }}">
+        <input
+            id="phone"
+            type="text"
+            name="phone"
+            class="form-control @error('phone') is-invalid @enderror"
+            value="{{ old('phone', $user->phone) }}"
+            autocomplete="tel"
+        >
+
         @error('phone')
-            <div class="invalid-feedback">{{ $message }}</div>
+            <div class="invalid-feedback">
+                {{ $message }}
+            </div>
         @enderror
     </div>
 
-    {{-- Address --}}
+    {{-- Alamat --}}
     <div class="mb-3">
-        <label for="address" class="form-label">Alamat Lengkap</label>
-        <textarea name="address"
-                  id="address"
-                  rows="3"
-                  class="form-control @error('address') is-invalid @enderror">{{ old('address', $user->address) }}</textarea>
+        <label for="address" class="form-label">Alamat</label>
+        <textarea
+            id="address"
+            name="address"
+            class="form-control @error('address') is-invalid @enderror"
+            rows="3"
+        >{{ old('address', $user->address) }}</textarea>
+
         @error('address')
-            <div class="invalid-feedback">{{ $message }}</div>
+            <div class="invalid-feedback">
+                {{ $message }}
+            </div>
         @enderror
     </div>
 
-    <button type="submit" class="btn btn-primary">Simpan Informasi</button>
+    <button type="submit" class="btn btn-primary">
+        Simpan Perubahan
+    </button>
 </form>

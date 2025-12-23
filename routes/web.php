@@ -1,96 +1,62 @@
 <?php
-// ========================================
-// FILE: routes/web.php
-// ========================================
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request;
 
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Auth\GoogleController;
+/*
+|--------------------------------------------------------------------------
+| CONTROLLERS
+|--------------------------------------------------------------------------
+*/
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Auth\GoogleController;
+
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Middleware\AdminMiddleware;
 
 /*
 |--------------------------------------------------------------------------
-| ROUTE PUBLIK
+| AUTH ROUTES
+|--------------------------------------------------------------------------
+*/
+Auth::routes();
+
+/*
+|--------------------------------------------------------------------------
+| HALAMAN PUBLIK
 |--------------------------------------------------------------------------
 */
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-Route::get('/products', [CatalogController::class, 'index'])->name('catalog.index');
-Route::get('/products/{slug}', [CatalogController::class, 'show'])->name('catalog.show');
+/* ROUTE LAMA (TETAP) */
+Route::get('/products', [CatalogController::class, 'index'])
+    ->name('catalog.index');
+
+Route::get('/products/{slug}', [CatalogController::class, 'show'])
+    ->name('catalog.show');
 
 /*
 |--------------------------------------------------------------------------
-| ROUTE CUSTOMER (LOGIN)
+| ROUTE TAMBAHAN (SESUI PERMINTAAN)
+| Tanpa name() agar tidak bentrok
 |--------------------------------------------------------------------------
 */
-Route::middleware('auth')->group(function () {
-
-    // Cart
-    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-    Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
-    Route::patch('/cart/{item}', [CartController::class, 'update'])->name('cart.update');
-    Route::delete('/cart/{item}', [CartController::class, 'remove'])->name('cart.remove');
-
-    // Wishlist
-    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
-    Route::post('/wishlist/toggle/{product}', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
-
-    // Checkout
-    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
-    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
-
-    // Orders
-    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
-    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
-
-    // Profile
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::delete('/profile/avatar', [ProfileController::class, 'deleteAvatar'])->name('profile.avatar.destroy');
-    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
-});
+Route::get('/catalog', [CatalogController::class, 'index']);
+Route::get('/product/{slug}', [CatalogController::class, 'show']);
 
 /*
 |--------------------------------------------------------------------------
-| ROUTE ADMIN
-|--------------------------------------------------------------------------
-*/
-Route::middleware(['auth', 'admin'])
-    ->prefix('admin')
-    ->name('admin.')
-    ->group(function () {
-
-        Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-
-        Route::resource('products', AdminProductController::class);
-        Route::resource('categories', AdminCategoryController::class);
-
-        Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
-        Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
-        Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])
-            ->name('orders.updateStatus');
-
-        Route::get('/reports/sales', [AdminOrderController::class, 'salesReport'])->name('reports.sales');
-        Route::get('/user', [AdminController::class, 'index'])->name('users.index');
-});
-
-/*
-|--------------------------------------------------------------------------
-| GOOGLE OAUTH
+| GOOGLE AUTH
 |--------------------------------------------------------------------------
 */
 Route::controller(GoogleController::class)->group(function () {
@@ -100,30 +66,87 @@ Route::controller(GoogleController::class)->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| ✅ FIX 1: EMAIL VERIFICATION
+| CUSTOMER (LOGIN REQUIRED)
 |--------------------------------------------------------------------------
 */
-Route::post('/email/verification-notification', function (Request $request) {
-    $request->user()->sendEmailVerificationNotification();
-    return back()->with('status', 'verification-link-sent');
-})->middleware('auth')->name('verification.send');
+Route::middleware('auth')->group(function () {
+
+    // Profile
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])
+        ->name('profile.password.update');
+
+    Route::delete('/profile/google', [ProfileController::class, 'unlinkGoogle'])
+        ->name('profile.google.unlink');
+
+    Route::delete('/profile/avatar', [ProfileController::class, 'deleteAvatar'])
+        ->name('profile.avatar.destroy');
+
+    Route::delete('/profile', [ProfileController::class, 'destroy'])
+        ->name('profile.destroy');
+
+    // Cart
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+    Route::patch('/cart/{item}', [CartController::class, 'update'])->name('cart.update');
+    Route::delete('/cart/{item}', [CartController::class, 'remove'])->name('cart.remove');
+
+    // Wishlist
+    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
+    Route::post('/wishlist/toggle/{product}', [WishlistController::class, 'toggle'])
+        ->name('wishlist.toggle');
+
+    // Checkout
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+
+    // Orders
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+});
 
 /*
 |--------------------------------------------------------------------------
-| ✅ FIX 2: UNLINK GOOGLE ACCOUNT
+| ADMIN ROUTES
 |--------------------------------------------------------------------------
 */
-Route::delete('/profile/google/unlink', function () {
-    $user = auth()->user();
-    $user->google_id = null;
-    $user->save();
+Route::middleware(['auth', AdminMiddleware::class])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
 
-    return back()->with('status', 'google-unlinked');
-})->middleware('auth')->name('profile.google.unlink');
+        // Dashboard
+        Route::get('/', [DashboardController::class, 'index'])
+            ->name('dashboard');
 
-/*
-|--------------------------------------------------------------------------
-| AUTH ROUTES
-|--------------------------------------------------------------------------
-*/
-Auth::routes();
+        // Produk
+        Route::resource('products', AdminProductController::class);
+
+        // Kategori
+        Route::resource('categories', AdminCategoryController::class)
+            ->except(['show']);
+
+        // Orders
+        Route::get('/orders', [AdminOrderController::class, 'index'])
+            ->name('orders.index');
+
+        Route::get('/orders/{order}', [AdminOrderController::class, 'show'])
+            ->name('orders.show');
+
+        Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])
+            ->name('orders.updateStatus');
+
+        // Users
+        Route::get('/users', [UserController::class, 'index'])
+            ->name('users.index');
+
+        /*
+        |--------------------------------------------------------------------------
+        | REPORTS (FIX ERROR admin.reports.sales)
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/reports/sales', function () {
+            return view('admin.reports.sales');
+        })->name('reports.sales');
+    });

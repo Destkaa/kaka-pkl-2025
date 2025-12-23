@@ -1,5 +1,3 @@
-{{-- resources/views/profile/partials/update-avatar-form.blade.php --}}
-
 <p class="text-muted small">
     Upload foto profil kamu. Format yang didukung: JPG, PNG, WebP. Maksimal 2MB.
 </p>
@@ -7,6 +5,12 @@
 <form method="post" action="{{ route('profile.update') }}" enctype="multipart/form-data">
     @csrf
     @method('patch')
+
+    {{-- 🔴 WAJIB: kirim field yang divalidasi --}}
+    <input type="hidden" name="name" value="{{ $user->name }}">
+    <input type="hidden" name="email" value="{{ $user->email }}">
+    <input type="hidden" name="phone" value="{{ $user->phone }}">
+    <input type="hidden" name="address" value="{{ $user->address }}">
 
     <div class="d-flex align-items-center gap-4">
         {{-- Avatar Preview --}}
@@ -36,6 +40,7 @@
                    accept="image/*"
                    onchange="previewAvatar(event)"
                    class="form-control @error('avatar') is-invalid @enderror">
+
             @error('avatar')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror

@@ -1,12 +1,10 @@
 <?php
-// database/migrations/xxxx_create_wishlists_table.php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         Schema::create('wishlists', function (Blueprint $table) {
@@ -22,7 +20,7 @@ return new class extends Migration
 
             $table->timestamps();
 
-            // User hanya bisa wishlist produk sekali
+            // user tidak bisa wishlist produk yang sama 2x
             $table->unique(['user_id', 'product_id']);
         });
     }

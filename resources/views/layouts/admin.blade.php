@@ -81,7 +81,7 @@
                             {{-- Logic PHP di View ini hanya untuk contoh.
                                  Best Practice: Gunakan View Composer atau inject variable dari Controller.
                                  Jangan query database langsung di Blade view di production app! --}}
-                            @php
+                            {{-- @php --}}
                                 $pendingCount = \App\Models\Order::where('status', 'pending')
                                     ->where('payment_status', 'paid')->count();
                             @endphp
