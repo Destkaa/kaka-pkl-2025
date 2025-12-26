@@ -1,91 +1,93 @@
 <?php
+
 namespace App\Http\Requests;
 
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ProfileUpdateRequest extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * Izinkan user untuk melakukan request ini.
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * Aturan validasi.
      */
     public function rules(): array
     {
         return [
-            // Nama: wajib, string, max 255 karakter
-            'name'    => [
-                'required',
-                'string',
-                'max:255',
+            /**
+             * 'required_without:avatar' artinya:
+             * Field ini wajib diisi HANYA JIKA 'avatar' tidak ada dalam request.
+             * Jadi saat klik "Simpan Foto", Laravel tidak akan mencari 'name'.
+             */
+            'name' => [
+                'nullable', 
+                'string', 
+                'max:255', 
+                'required_without:avatar'
             ],
 
-            // Email: wajib, format email valid, unik (kecuali milik user ini)
-            // Kasus Penting: User ingin ganti nama tapi tidak ganti email.
-            // Jika validasi email tetap 'unique:users', maka akan error "Email sudah terdaftar" (karena email dia sendiri).
-            // Solusi: ->ignore($id) memberitahu database untuk melewati pengecekan unique pada baris ID user ini.
-            'email'   => [
-                'required',
+            'email' => [
+                'nullable',
                 'string',
                 'lowercase',
                 'email',
                 'max:255',
-                // Rule::unique('users')->ignore($this->user()->id)
+                'required_without:avatar',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
 
-            // Phone: opsional, regex khusus format Indonesia
-            // Menerima: 0812..., 62812..., +62812...
-            'phone'   => [
-                'nullable',
-                'string',
-                'max:20',
-                'regex:/^(\+62|62|0)8[1-9][0-9]{6,10}$/',
+            'phone' => [
+                'nullable', 
+                'string', 
+                'max:20', 
+                'regex:/^(\+62|62|0)8[1-9][0-9]{6,10}$/'
             ],
 
-            // Address: opsional, text max 500 karakter
             'address' => [
-                'nullable',
-                'string',
-                'max:500',
+                'nullable', 
+                'string', 
+                'max:500'
             ],
 
-            // Avatar: opsional
-            // Harus file gambar (mime: jpg, png, webp)
-            // Max ukuran 2MB (2048 KB)
-            // Dimensi minimal 100x100px agar tidak pecah/blur
-            'avatar'  => [
-                'nullable',
-                'image',
-                'mimes:jpeg,jpg,png,webp',
+            'avatar' => [
+                'nullable', 
+                'image', 
+                'mimes:jpeg,jpg,png,webp', 
                 'max:2048',
-                'dimensions:min_width=100,min_height=100,max_width=2000,max_height=2000',
+                'dimensions:min_width=100,min_height=100,max_width=2000,max_height=2000'
             ],
         ];
     }
 
+    /**
+     * Custom error messages.
+     */
     public function messages(): array
     {
         return [
-            'phone.regex'       => 'Format nomor telepon tidak valid. Gunakan format 08xx atau +628xx.',
-            'avatar.max'        => 'Ukuran foto maksimal 2MB.',
-            'avatar.dimensions' => 'Dimensi foto harus antara 100x100 hingga 2000x2000 pixel.',
-            'email.unique'      => 'Email ini sudah digunakan oleh pengguna lain.',
+            'name.required_without'  => 'Nama wajib diisi jika tidak sedang mengupdate foto.',
+            'email.required_without' => 'Email wajib diisi jika tidak sedang mengupdate foto.',
+            'phone.regex'            => 'Format nomor telepon tidak valid.',
+            'avatar.max'             => 'Ukuran foto maksimal 2MB.',
+            'avatar.dimensions'      => 'Dimensi foto tidak sesuai.',
         ];
     }
 
+    /**
+     * Nama atribut untuk pesan error.
+     */
     public function attributes(): array
     {
         return [
-            'name'    => 'nama',
+            'name'    => 'nama lengkap',
             'email'   => 'alamat email',
             'phone'   => 'nomor telepon',
             'address' => 'alamat domisili',

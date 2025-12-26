@@ -1,28 +1,25 @@
-{{-- resources/views/profile/partials/update-avatar-form.blade.php --}}
+
 
 <p class="text-muted small">
     Upload foto profil kamu. Format yang didukung: JPG, PNG, WebP. Maksimal 2MB.
 </p>
 
-<form method="post" action="{{ route('profile.update') }}" enctype="multipart/form-data">
-    @csrf
-    @method('patch')
+<form method="post" action="<?php echo e(route('profile.update')); ?>" enctype="multipart/form-data">
+    <?php echo csrf_field(); ?>
+    <?php echo method_field('patch'); ?>
 
     <div class="d-flex align-items-center gap-4">
-        {{-- Avatar Preview --}}
+        
         <div class="position-relative">
-            {{-- 
-                PERBAIKAN UTAMA: Menggunakan properti avatar_url dari Model User. 
-                Ini akan otomatis menangani fallback ke Gravatar jika file di storage hilang.
-            --}}
+            
             <img id="avatar-preview" 
                  class="rounded-circle object-fit-cover border" 
                  style="width: 100px; height: 100px;"
-                 src="{{ $user->avatar_url }}" 
-                 alt="{{ $user->name }}">
+                 src="<?php echo e($user->avatar_url); ?>" 
+                 alt="<?php echo e($user->name); ?>">
 
-            {{-- Tombol Hapus Foto (Hanya muncul jika user punya foto di database) --}}
-            @if($user->avatar && !str_starts_with($user->avatar, 'http'))
+            
+            <?php if($user->avatar && !str_starts_with($user->avatar, 'http')): ?>
             <button type="button"
                 onclick="if(confirm('Hapus foto profil?')) document.getElementById('delete-avatar-form').submit()"
                 class="btn btn-danger btn-sm rounded-circle position-absolute top-0 start-100 translate-middle p-1"
@@ -30,21 +27,35 @@
                 title="Hapus foto">
                 &times;
             </button>
-            @endif
+            <?php endif; ?>
         </div>
 
-        {{-- Upload Input --}}
+        
         <div class="flex-grow-1">
             <input type="file" 
                    name="avatar" 
                    id="avatar" 
                    accept="image/*" 
                    onchange="previewAvatar(event)"
-                   class="form-control @error('avatar') is-invalid @enderror">
+                   class="form-control <?php $__errorArgs = ['avatar'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>">
             
-            @error('avatar')
-            <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
+            <?php $__errorArgs = ['avatar'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+            <div class="invalid-feedback"><?php echo e($message); ?></div>
+            <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
         </div>
     </div>
 
@@ -53,10 +64,10 @@
     </div>
 </form>
 
-{{-- Form Tersembunyi untuk Proses Hapus Avatar --}}
-<form id="delete-avatar-form" action="{{ route('profile.avatar.destroy') }}" method="POST" class="d-none">
-    @csrf
-    @method('DELETE')
+
+<form id="delete-avatar-form" action="<?php echo e(route('profile.avatar.destroy')); ?>" method="POST" class="d-none">
+    <?php echo csrf_field(); ?>
+    <?php echo method_field('DELETE'); ?>
 </form>
 
 <script>
@@ -81,4 +92,4 @@
             reader.readAsDataURL(file);
         }
     }
-</script>
+</script><?php /**PATH C:\xampp\htdocs\gadget-murah\resources\views/profile/partials/update-avatar-form.blade.php ENDPATH**/ ?>

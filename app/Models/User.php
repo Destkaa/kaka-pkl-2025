@@ -1,5 +1,4 @@
 <?php
-// app/Models/User.php
 
 namespace App\Models;
 
@@ -7,7 +6,6 @@ use App\Models\Cart;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-// PERBAIKAN: Gunakan Facade Storage yang benar agar fungsi Storage::disk() bisa terbaca
 use Illuminate\Support\Facades\Storage; 
 
 class User extends Authenticatable
@@ -15,7 +13,9 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
-     * Kolom yang boleh diisi secara mass-assignment.
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
      */
     protected $fillable = [
         'name',
@@ -29,7 +29,9 @@ class User extends Authenticatable
     ];
 
     /**
-     * Kolom yang disembunyikan saat serialisasi ke JSON/array.
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
      */
     protected $hidden = [
         'password',
@@ -37,7 +39,9 @@ class User extends Authenticatable
     ];
 
     /**
-     * Casting tipe data otomatis.
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
      */
     protected function casts(): array
     {
@@ -84,28 +88,44 @@ class User extends Authenticatable
             ->exists();
     }
 
+    /**
+     * Aksesor untuk mendapatkan URL Avatar yang valid.
+     * Menangani file lokal, URL eksternal (Google), dan fallback inisial.
+     */
     public function getAvatarUrlAttribute(): string
     {
-        // Menggunakan Storage Facade yang sudah diimport dengan benar di atas
-        if ($this->avatar && Storage::disk('public')->exists($this->avatar)) {
-            return asset('storage/' . $this->avatar);
+        $avatarPath = trim($this->avatar ?? '');
+
+        // 1. Jika avatar adalah URL eksternal lengkap (misal: Login Google)
+        if (filter_var($avatarPath, FILTER_VALIDATE_URL)) {
+            return $avatarPath;
         }
 
-        if (str_starts_with($this->avatar ?? '', 'http')) {
-            return $this->avatar;
+        // 2. Jika avatar adalah path file lokal (misal: 'avatars/gambar.jpg')
+        if ($avatarPath) {
+            // Pastikan file benar-benar ada di folder storage/app/public
+            if (Storage::disk('public')->exists($avatarPath)) {
+                return Storage::disk('public')->url($avatarPath);
+            }
         }
 
-        $hash = md5(strtolower(trim($this->email)));
-        return "https://www.gravatar.com/avatar/{$hash}?d=mp&s=200";
+        // 3. Fallback: Gunakan UI Avatars jika tidak ada foto
+        // Ini akan menampilkan inisial nama user (misal: "JD" untuk John Doe)
+        return "https://ui-avatars.com/api/?name=" . urlencode($this->name) . "&color=7F9CF5&background=EBF4FF";
     }
 
+    /**
+     * Mendapatkan inisial nama (maksimal 2 karakter).
+     */
     public function getInitialsAttribute(): string
     {
         $words    = explode(' ', $this->name);
         $initials = '';
 
         foreach ($words as $word) {
-            $initials .= strtoupper(substr($word, 0, 1));
+            if (!empty($word)) {
+                $initials .= strtoupper(substr($word, 0, 1));
+            }
         }
 
         return substr($initials, 0, 2);

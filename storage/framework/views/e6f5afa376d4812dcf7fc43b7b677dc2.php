@@ -1,7 +1,4 @@
-{{-- ================================================
-     FILE: resources/views/layouts/app.blade.php
-     FUNGSI: Master layout untuk halaman customer/publik
-     ================================================ --}}
+
 
 <!DOCTYPE html>
 <html lang="id">
@@ -9,50 +6,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    {{-- CSRF Token --}}
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
 
-    {{-- SEO --}}
-    <title>@yield('title', 'Toko Online') - {{ config('app.name') }}</title>
-    <meta name="description" content="@yield('meta_description', 'Toko online terpercaya dengan produk berkualitas')">
+    
+    <title><?php echo $__env->yieldContent('title', 'Toko Online'); ?> - <?php echo e(config('app.name')); ?></title>
+    <meta name="description" content="<?php echo $__env->yieldContent('meta_description', 'Toko online terpercaya dengan produk berkualitas'); ?>">
 
-    {{-- Favicon --}}
-    {{-- Perbaikan: Tambahkan type untuk memastikan browser mengenali file ico/png --}}
-   <link rel="icon" type="image/png" href="{{ asset('logo.png') }}">
+    
+    
+   <link rel="icon" type="image/png" href="<?php echo e(asset('logo.png')); ?>">
 
-    {{-- Google Fonts --}}
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    {{-- Vite --}}
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
+    <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
 
-    {{-- CSS tambahan --}}
-    @stack('styles')
+    
+    <?php echo $__env->yieldPushContent('styles'); ?>
 </head>
 
 <body>
-    {{-- NAVBAR --}}
-    @include('partials.navbar')
+    
+    <?php echo $__env->make('partials.navbar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
-    {{-- FLASH MESSAGES --}}
+    
     <div class="container mt-3">
-        @include('partials.flash-messages')
+        <?php echo $__env->make('partials.flash-messages', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
     </div>
 
-    {{-- CONTENT --}}
+    
     <main class="min-vh-100">
-        @yield('content')
+        <?php echo $__env->yieldContent('content'); ?>
     </main>
 
-    {{-- FOOTER --}}
-    @include('partials.footer')
+    
+    <?php echo $__env->make('partials.footer', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
-    {{-- SCRIPT AREA --}}
-    {{-- Tempat script library luar jika ada --}}
-    @stack('scripts')
+    
+    
+    <?php echo $__env->yieldPushContent('scripts'); ?>
 
-    {{-- Script Global (Wishlist dll) --}}
+    
     <script>
         /**
          * Logic Wishlist
@@ -117,4 +114,4 @@
         }
     </script>
 </body>
-</html>
+</html><?php /**PATH C:\xampp\htdocs\gadget-murah\resources\views/layouts/app.blade.php ENDPATH**/ ?>
