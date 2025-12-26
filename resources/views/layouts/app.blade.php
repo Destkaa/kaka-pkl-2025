@@ -47,64 +47,74 @@
     {{-- FOOTER --}}
     @include('partials.footer')
 
-    {{-- TEMPAT SCRIPT --}}
+    {{-- TEMPAT SCRIPT (PASTIKAN @STACK ADA DI DALAM BODY) --}}
     @stack('scripts')
+
+    {{-- ============================================
+         SCRIPT WISHLIST (DIMASUKKAN KE DALAM LAYOUT)
+         ============================================ --}}
+    <script>
+        async function toggleWishlist(productId) {
+            try {
+                const token = document.querySelector('meta[name="csrf-token"]').content;
+
+                const response = await fetch(`/wishlist/toggle/${productId}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": token,
+                        "Accept": "application/json"
+                    },
+                });
+
+                if (response.status === 401) {
+                    window.location.href = "/login";
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (data.status === "success") {
+                    updateWishlistUI(productId, data.added);
+                    updateWishlistCounter(data.count);
+                    
+                    // Cek jika fungsi showToast tersedia
+                    if (typeof showToast === "function") {
+                        showToast(data.message);
+                    } else {
+                        alert(data.message);
+                    }
+                }
+            } catch (error) {
+                console.error(error);
+                if (typeof showToast === "function") {
+                    showToast("Terjadi kesalahan sistem.", "error");
+                }
+            }
+        }
+
+        function updateWishlistUI(productId, isAdded) {
+            document.querySelectorAll(`.wishlist-btn-${productId}`).forEach(btn => {
+                const icon = btn.querySelector("i");
+                if (!icon) return;
+
+                if (isAdded) {
+                    icon.classList.add("bi-heart-fill", "text-danger");
+                    icon.classList.remove("bi-heart", "text-secondary");
+                } else {
+                    icon.classList.remove("bi-heart-fill", "text-danger");
+                    icon.classList.add("bi-heart", "text-secondary");
+                }
+            });
+        }
+
+        function updateWishlistCounter(count) {
+            const badge = document.getElementById("wishlist-count");
+            if (!badge) return;
+
+            badge.innerText = count;
+            badge.style.display = count > 0 ? "inline-block" : "none";
+        }
+    </script>
 </body>
 </html>
-
-{{-- ============================================
-     SCRIPT WISHLIST (SESUAI MODUL)
-     ============================================ --}}
-@push('scripts')
-<script>
-  async function toggleWishlist(productId) {
-    try {
-      const token = document.querySelector('meta[name="csrf-token"]').content;
-
-      const response = await fetch(`/wishlist/toggle/${productId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRF-TOKEN": token,
-        },
-      });
-
-      if (response.status === 401) {
-        window.location.href = "/login";
-        return;
-      }
-
-      const data = await response.json();
-
-      if (data.status === "success") {
-        updateWishlistUI(productId, data.added);
-        updateWishlistCounter(data.count);
-        showToast(data.message);
-      }
-    } catch (error) {
-      console.error(error);
-      showToast("Terjadi kesalahan sistem.", "error");
-    }
-  }
-
-  function updateWishlistUI(productId, isAdded) {
-    document.querySelectorAll(`.wishlist-btn-${productId}`).forEach(btn => {
-      const icon = btn.querySelector("i");
-      if (!icon) return;
-
-      icon.classList.toggle("bi-heart-fill", isAdded);
-      icon.classList.toggle("text-danger", isAdded);
-      icon.classList.toggle("bi-heart", !isAdded);
-      icon.classList.toggle("text-secondary", !isAdded);
-    });
-  }
-
-  function updateWishlistCounter(count) {
-    const badge = document.getElementById("wishlist-count");
-    if (!badge) return;
-
-    badge.innerText = count;
-    badge.style.display = count > 0 ? "inline-block" : "none";
-  }
-</script>
-@endpush

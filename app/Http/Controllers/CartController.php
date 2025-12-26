@@ -1,34 +1,31 @@
 <?php
+// app/Http/Controllers/CartController.php
 
 namespace App\Http\Controllers;
 
-use App\Services\CartService;
 use App\Models\Product;
+use App\Services\CartService;
 use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
     protected $cartService;
 
+    // Inject Service melalui Constructor
     public function __construct(CartService $cartService)
     {
         $this->cartService = $cartService;
     }
 
-    /**
-     * Tampilkan halaman keranjang
-     */
     public function index()
     {
         $cart = $this->cartService->getCart();
+        // Load produk dan gambar untuk ditampilkan
         $cart->load(['items.product.primaryImage']);
 
         return view('cart.index', compact('cart'));
     }
 
-    /**
-     * Tambah produk ke keranjang
-     */
     public function add(Request $request)
     {
         $request->validate([
@@ -40,20 +37,15 @@ class CartController extends Controller
             $product = Product::findOrFail($request->product_id);
             $this->cartService->addProduct($product, $request->quantity);
 
-            return back()->with('success', 'Produk ditambahkan ke keranjang.');
+            return back()->with('success', 'Produk berhasil ditambahkan ke keranjang!');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }
     }
 
-    /**
-     * Update quantity item di keranjang
-     */
     public function update(Request $request, $itemId)
     {
-        $request->validate([
-            'quantity' => 'required|integer|min:0',
-        ]);
+        $request->validate(['quantity' => 'required|integer|min:0']);
 
         try {
             $this->cartService->updateQuantity($itemId, $request->quantity);
@@ -63,14 +55,11 @@ class CartController extends Controller
         }
     }
 
-    /**
-     * Hapus item dari keranjang
-     */
     public function remove($itemId)
     {
         try {
             $this->cartService->removeItem($itemId);
-            return back()->with('success', 'Item dihapus.');
+            return back()->with('success', 'Item dihapus dari keranjang.');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }

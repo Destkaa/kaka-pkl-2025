@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
-
 class ProfileController extends Controller
 {
     /**
@@ -103,7 +102,6 @@ class ProfileController extends Controller
         return back()->with('success', 'Foto profil berhasil dihapus.');
     }
 
-
     /**
      * Update password user.
      */
@@ -111,7 +109,7 @@ class ProfileController extends Controller
     {
         $validated = $request->validateWithBag('updatePassword', [
             'current_password' => ['required', 'current_password'],
-            'password' => ['required', 'confirmed', 'min:8'],
+            'password'         => ['required', 'confirmed', 'min:8'],
         ]);
 
         $request->user()->update([

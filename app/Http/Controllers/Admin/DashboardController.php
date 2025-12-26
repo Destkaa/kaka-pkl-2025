@@ -1,37 +1,22 @@
 <?php
-
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Order;
-use App\Models\Product;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        // Statistik dashboard
         $stats = [
-            // Total pendapatan dari pesanan selesai
-            'total_revenue' => Order::where('status', 'completed')
-                ->sum('total_amount'),
-
-            // Total semua pesanan
-            'total_orders' => Order::count(),
-
-            // Pesanan pending
-            'pending_orders' => Order::where('status', 'pending')->count(),
-
-            // Produk dengan stok rendah (≤ 5)
-            'low_stock' => Product::where('stock', '<=', 5)->count(),
+            'users' => \App\Models\User::count(),
+            'products' => \App\Models\Product::count(),
+            'orders' => \App\Models\Order::count(),
+            'total_orders' => \App\Models\Order::count(),
+            'total_revenue' => \App\Models\Order::where('payment_status', 'paid')->sum('total_amount'),
+            'pending_orders' => \App\Models\Order::where('status', 'pending')->count(),
+            'low_stock' => \App\Models\Product::where('stock', '<', 10)->count(),
         ];
-
-        // Pesanan terbaru (5 terakhir)
-        $recentOrders = Order::with('user')
-            ->latest()
-            ->limit(5)
-            ->get();
-
+        $recentOrders = \App\Models\Order::with('user')->latest()->take(5)->get();
         return view('admin.dashboard', compact('stats', 'recentOrders'));
     }
 }

@@ -1,18 +1,21 @@
 <?php
+// app/Models/User.php
 
 namespace App\Models;
 
+use App\Models\Cart;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Storage;
+// PERBAIKAN: Gunakan Facade Storage yang benar agar fungsi Storage::disk() bisa terbaca
+use Illuminate\Support\Facades\Storage; 
 
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
     /**
-     * Kolom yang boleh diisi
+     * Kolom yang boleh diisi secara mass-assignment.
      */
     protected $fillable = [
         'name',
@@ -26,7 +29,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * Kolom tersembunyi
+     * Kolom yang disembunyikan saat serialisasi ke JSON/array.
      */
     protected $hidden = [
         'password',
@@ -34,19 +37,17 @@ class User extends Authenticatable
     ];
 
     /**
-     * Casting otomatis
+     * Casting tipe data otomatis.
      */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
+            'password'          => 'hashed',
         ];
     }
 
-    // ==================================================
-    // RELATIONSHIPS
-    // ==================================================
+    // ==================== RELATIONSHIPS ====================
 
     public function cart()
     {
@@ -58,70 +59,49 @@ class User extends Authenticatable
         return $this->hasMany(Order::class);
     }
 
-    // ==================================================
-    // WISHLIST
-    // ==================================================
-
-    // Pivot wishlist
     public function wishlists()
     {
         return $this->belongsToMany(Product::class, 'wishlists')
-                    ->withTimestamps();
+            ->withTimestamps();
     }
 
-    // Alias
-    public function wishlist()
-    {
-        return $this->wishlists();
-    }
-
-    // Alias legacy
-    public function wishlistProducts()
-    {
-        return $this->wishlists();
-    }
-
-    // Cek produk ada di wishlist
-    public function hasInWishlist(Product $product): bool
-    {
-        return $this->wishlists()
-                    ->where('product_id', $product->id)
-                    ->exists();
-    }
-
-    // ==================================================
-    // HELPERS
-    // ==================================================
+    // ==================== HELPER METHODS ====================
 
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
     }
 
-    // ==================================================
-    // ACCESSORS
-    // ==================================================
+    public function isCustomer(): bool
+    {
+        return $this->role === 'customer';
+    }
+
+    public function hasInWishlist(Product $product): bool
+    {
+        return $this->wishlists()
+            ->where('product_id', $product->id)
+            ->exists();
+    }
 
     public function getAvatarUrlAttribute(): string
     {
-        // Avatar upload lokal
+        // Menggunakan Storage Facade yang sudah diimport dengan benar di atas
         if ($this->avatar && Storage::disk('public')->exists($this->avatar)) {
             return asset('storage/' . $this->avatar);
         }
 
-        // Avatar dari Google / URL eksternal
         if (str_starts_with($this->avatar ?? '', 'http')) {
             return $this->avatar;
         }
 
-        // Fallback Gravatar
         $hash = md5(strtolower(trim($this->email)));
         return "https://www.gravatar.com/avatar/{$hash}?d=mp&s=200";
     }
 
     public function getInitialsAttribute(): string
     {
-        $words = explode(' ', $this->name);
+        $words    = explode(' ', $this->name);
         $initials = '';
 
         foreach ($words as $word) {

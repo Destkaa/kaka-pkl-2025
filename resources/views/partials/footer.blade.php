@@ -1,7 +1,7 @@
 {{-- ================================================
-     FILE: resources/views/partials/footer.blade.php
-     FUNGSI: Footer website
-     ================================================ --}}
+FILE: resources/views/partials/footer.blade.php
+FUNGSI: Footer website
+================================================ --}}
 
 <footer class="bg-dark text-light pt-5 pb-3 mt-5">
     <div class="container">
@@ -16,10 +16,10 @@
                     Belanja mudah, aman, dan nyaman.
                 </p>
                 <div class="d-flex gap-3 mt-3">
-                    <a href="https://www.facebook.com/share/1AvmsTwR2H/" class="text-secondary fs-5"><i class="bi bi-facebook"></i></a>
-                    <a href="https://www.instagram.com/destkaaa_13?igsh=MTdqYWV0ZGF1eHl0aw==" class="text-secondary fs-5"><i class="bi bi-instagram"></i></a>
+                    <a href="#" class="text-secondary fs-5"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="text-secondary fs-5"><i class="bi bi-instagram"></i></a>
                     <a href="#" class="text-secondary fs-5"><i class="bi bi-twitter-x"></i></a>
-                    <a href="https://github.com/Destkaa" class="text-secondary fs-5"><i class="bi bi-github"></i></a>
+                    <a href="#" class="text-secondary fs-5"><i class="bi bi-youtube"></i></a>
                 </div>
             </div>
 
