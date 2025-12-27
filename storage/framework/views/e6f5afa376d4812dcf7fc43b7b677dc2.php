@@ -1,7 +1,7 @@
 
 
 <!DOCTYPE html>
-<html lang="id">
+<html lang="<?php echo e(str_replace('_', '-', app()->getLocale())); ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,7 +15,7 @@
 
     
     
-   <link rel="icon" type="image/png" href="<?php echo e(asset('logo.png')); ?>">
+    <link rel="icon" type="image/png" href="<?php echo e(asset('logo.png')); ?>">
 
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,6 +26,7 @@
 
     
     <?php echo $__env->yieldPushContent('styles'); ?>
+    <?php echo $__env->yieldPushContent('scripts_head'); ?>
 </head>
 
 <body>

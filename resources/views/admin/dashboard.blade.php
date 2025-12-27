@@ -1,123 +1,129 @@
-{{-- ================================================
-     FILE: resources/views/admin/dashboard.blade.php
-     FUNGSI: Dashboard admin dengan statistik
-     ================================================ --}}
+{{-- ======================================== 
+FILE: resources/views/admin/dashboard.blade.php 
+FUNGSI: Dashboard admin dengan warna status yang kontras
+======================================== --}}
 
 @extends('layouts.admin')
 
-@section('title', 'Dashboard')
 @section('title', 'Dashboard')
 @section('page-title', 'Dashboard')
 
 @section('content')
     {{-- Stats Cards --}}
-    {{-- Data $stats dikirim dari Admin/DashboardController --}}
     <div class="row g-4 mb-4">
+        {{-- Total Pendapatan --}}
         <div class="col-sm-6 col-xl-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <p class="text-muted mb-1">Total Pendapatan</p>
-                            <h4 class="mb-0">Rp {{ number_format($stats['total_revenue'], 0, ',', '.') }}</h4>
+            <div class="card border-0 shadow-sm h-100 stat-card rounded-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="stat-icon bg-success bg-opacity-10 text-success rounded-4 d-flex align-items-center justify-content-center">
+                            <i class="bi bi-wallet2 fs-3"></i>
                         </div>
-                        <div class="bg-success bg-opacity-10 rounded p-3">
-                            <i class="bi bi-currency-dollar text-success fs-4"></i>
-                        </div>
+                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1 small">+12.5%</span>
                     </div>
+                    <p class="text-muted mb-1 fw-medium small text-uppercase tracking-wider">Total Pendapatan</p>
+                    <h3 class="fw-bold mb-0 text-dark">Rp {{ number_format($stats['total_revenue'], 0, ',', '.') }}</h3>
                 </div>
             </div>
         </div>
 
+        {{-- Total Pesanan --}}
         <div class="col-sm-6 col-xl-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <p class="text-muted mb-1">Total Pesanan</p>
-                            <h4 class="mb-0">{{ $stats['total_orders'] }}</h4>
+            <div class="card border-0 shadow-sm h-100 stat-card rounded-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="stat-icon bg-primary bg-opacity-10 text-primary rounded-4 d-flex align-items-center justify-content-center">
+                            <i class="bi bi-bag-check fs-3"></i>
                         </div>
-                        <div class="bg-primary bg-opacity-10 rounded p-3">
-                            <i class="bi bi-bag text-primary fs-4"></i>
-                        </div>
+                        <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-2 py-1 small">Orders</span>
                     </div>
+                    <p class="text-muted mb-1 fw-medium small text-uppercase tracking-wider">Total Pesanan</p>
+                    <h3 class="fw-bold mb-0 text-dark">{{ number_format($stats['total_orders'], 0, ',', '.') }}</h3>
                 </div>
             </div>
         </div>
 
+        {{-- Perlu Diproses --}}
         <div class="col-sm-6 col-xl-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <p class="text-muted mb-1">Perlu Diproses</p>
-                            <h4 class="mb-0">{{ $stats['pending_orders'] }}</h4>
+            <div class="card border-0 shadow-sm h-100 stat-card rounded-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="stat-icon bg-warning bg-opacity-10 text-warning rounded-4 d-flex align-items-center justify-content-center">
+                            <i class="bi bi-clock-history fs-3"></i>
                         </div>
-                        <div class="bg-warning bg-opacity-10 rounded p-3">
-                            <i class="bi bi-clock text-warning fs-4"></i>
-                        </div>
+                        <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill px-2 py-1 small">Pending</span>
                     </div>
+                    <p class="text-muted mb-1 fw-medium small text-uppercase tracking-wider">Perlu Diproses</p>
+                    <h3 class="fw-bold mb-0 text-dark">{{ $stats['pending_orders'] }}</h3>
                 </div>
             </div>
         </div>
 
+        {{-- Stok Menipis --}}
         <div class="col-sm-6 col-xl-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <p class="text-muted mb-1">Stok Menipis</p>
-                            <h4 class="mb-0">{{ $stats['low_stock'] }}</h4>
+            <div class="card border-0 shadow-sm h-100 stat-card rounded-4">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="stat-icon bg-danger bg-opacity-10 text-danger rounded-4 d-flex align-items-center justify-content-center">
+                            <i class="bi bi-box-seam fs-3"></i>
                         </div>
-                        <div class="bg-danger bg-opacity-10 rounded p-3">
-                            <i class="bi bi-exclamation-triangle text-danger fs-4"></i>
-                        </div>
+                        <span class="badge bg-danger bg-opacity-10 text-danger rounded-pill px-2 py-1 small">Low Stock</span>
                     </div>
+                    <p class="text-muted mb-1 fw-medium small text-uppercase tracking-wider">Stok Menipis</p>
+                    <h3 class="fw-bold mb-0 text-dark">{{ $stats['low_stock'] }}</h3>
                 </div>
             </div>
         </div>
     </div>
 
     <div class="row g-4">
-        {{-- Recent Orders --}}
+        {{-- Recent Orders Table --}}
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Pesanan Terbaru</h5>
-                    <a href="{{ route('admin.orders.index') }}" class="btn btn-sm btn-outline-primary">
-                        Lihat Semua
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="card-header bg-white py-3 px-4 d-flex justify-content-between align-items-center border-0">
+                    <h5 class="fw-bold mb-0">Pesanan Terbaru</h5>
+                    <a href="{{ route('admin.orders.index') }}" class="btn btn-sm btn-light rounded-pill px-3 fw-semibold">
+                        Semua <i class="bi bi-chevron-right small"></i>
                     </a>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>No. Order</th>
-                                    <th>Customer</th>
-                                    <th>Total</th>
-                                    <th>Status</th>
-                                    <th>Tanggal</th>
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr class="text-muted small text-uppercase tracking-wider">
+                                    <th class="ps-4 py-3 border-0">Order</th>
+                                    <th class="py-3 border-0">Customer</th>
+                                    <th class="py-3 border-0">Total</th>
+                                    <th class="py-3 border-0 text-center">Status</th>
+                                    <th class="pe-4 py-3 border-0 text-end">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($recentOrders as $order)
+                                @forelse($recentOrders as $order)
                                     <tr>
+                                        <td class="ps-4 fw-bold text-primary">#{{ $order->order_number }}</td>
                                         <td>
-                                            <a href="{{ route('admin.orders.show', $order) }}">
-                                                #{{ $order->order_number }}
-                                            </a>
+                                            <div class="fw-medium text-dark">{{ $order->user->name }}</div>
+                                            <div class="text-muted x-small">{{ $order->created_at->format('d M Y') }}</div>
                                         </td>
-                                        <td>{{ $order->user->name }}</td>
-                                        <td>Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
-                                        <td>
-                                            <span class="badge bg-{{ $order->status_color }}">
+                                        <td class="fw-bold text-dark">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
+                                        <td class="text-center">
+                                            {{-- Badge dengan background transparan & font warna penuh --}}
+                                            <span class="badge-status status-{{ $order->status_color }}">
                                                 {{ ucfirst($order->status) }}
                                             </span>
                                         </td>
-                                        <td>{{ $order->created_at->format('d M Y') }}</td>
+                                        <td class="pe-4 text-end">
+                                            <a href="{{ route('admin.orders.show', $order) }}" class="btn btn-sm btn-icon btn-light rounded-circle shadow-none">
+                                                <i class="bi bi-eye text-muted"></i>
+                                            </a>
+                                        </td>
                                     </tr>
-                                @endforeach
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="text-center py-5 text-muted small">Belum ada pesanan masuk.</td>
+                                    </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
@@ -127,24 +133,62 @@
 
         {{-- Quick Actions --}}
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white">
-                    <h5 class="mb-0">Aksi Cepat</h5>
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-header bg-white py-3 px-4 border-0">
+                    <h5 class="fw-bold mb-0">Aksi Cepat</h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body px-4 pb-4">
                     <div class="d-grid gap-2">
-                        <a href="{{ route('admin.products.create') }}" class="btn btn-primary">
+                        <a href="{{ route('admin.products.create') }}" class="btn btn-primary py-2 rounded-3 text-start px-3 shadow-none">
                             <i class="bi bi-plus-circle me-2"></i> Tambah Produk
                         </a>
-                        <a href="{{ route('admin.categories.index') }}" class="btn btn-outline-primary">
-                            <i class="bi bi-folder-plus me-2"></i> Kelola Kategori
+                        <a href="{{ route('admin.categories.index') }}" class="btn btn-outline-secondary py-2 rounded-3 text-start px-3 shadow-none border-light-subtle">
+                            <i class="bi bi-folder2-open me-2"></i> Kelola Kategori
                         </a>
-                        <a href="{{ route('admin.reports.sales') }}" class="btn btn-outline-primary">
-                            <i class="bi bi-file-earmark-bar-graph me-2"></i> Lihat Laporan
+                        <a href="{{ route('admin.reports.sales') }}" class="btn btn-outline-secondary py-2 rounded-3 text-start px-3 shadow-none border-light-subtle">
+                            <i class="bi bi-file-earmark-bar-graph me-2"></i> Laporan Penjualan
                         </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+<style>
+    /* 1. Perbaikan Ikon Agar Simetris (Tidak Gepeng) */
+    .stat-icon {
+        width: 52px;
+        height: 52px;
+        flex-shrink: 0;
+    }
+
+    /* 2. Custom Badge Status (Warna Font Full & Background Soft) */
+    .badge-status {
+        display: inline-block;
+        padding: 0.45em 1.2em;
+        font-size: 0.75rem;
+        font-weight: 700;
+        line-height: 1;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: 50rem;
+    }
+
+    /* Varian Warna Status */
+    .status-success { background-color: rgba(25, 135, 84, 0.15); color: #198754; } /* Hijau */
+    .status-warning { background-color: rgba(255, 193, 7, 0.15); color: #997404; } /* Kuning Tua (Agar Terbaca) */
+    .status-danger { background-color: rgba(220, 53, 69, 0.15); color: #dc3545; }  /* Merah */
+    .status-primary { background-color: rgba(13, 110, 253, 0.15); color: #0d6efd; } /* Biru */
+    .status-secondary { background-color: rgba(108, 117, 125, 0.15); color: #6c757d; } /* Abu */
+
+    /* Styling Tambahan */
+    .stat-card { transition: all 0.3s ease; border: 1px solid rgba(0,0,0,0.03) !important; }
+    .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.08) !important; }
+    .rounded-4 { border-radius: 1rem !important; }
+    .tracking-wider { letter-spacing: 0.05em; }
+    .x-small { font-size: 0.75rem; }
+    .btn-icon { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
+    .table thead th { background-color: #f8f9fa; }
+</style>
 @endsection

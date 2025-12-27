@@ -4,7 +4,7 @@
      ================================================ --}}
 
 <!DOCTYPE html>
-<html lang="id">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,7 +18,7 @@
 
     {{-- Favicon --}}
     {{-- Perbaikan: Tambahkan type untuk memastikan browser mengenali file ico/png --}}
-   <link rel="icon" type="image/png" href="{{ asset('logo.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('logo.png') }}">
 
     {{-- Google Fonts --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,8 +27,9 @@
     {{-- Vite --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    {{-- CSS tambahan --}}
+    {{-- Stack untuk script atau style tambahan dari child view di bagian Head --}}
     @stack('styles')
+    @stack('scripts_head')
 </head>
 
 <body>

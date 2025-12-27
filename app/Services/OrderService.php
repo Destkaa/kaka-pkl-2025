@@ -13,13 +13,6 @@ class OrderService
 {
     /**
      * Membuat Order baru dari Keranjang belanja.
-     *
-     * ALUR PROSES (TRANSACTION):
-     * 1. Hitung total & Validasi Stok terakhir
-     * 2. Buat Record Order (Header)
-     * 3. Pindahkan Cart Items ke Order Items (Detail)
-     * 4. Kurangi Stok Produk (Atomic Decrement)
-     * 5. Hapus Keranjang
      */
     public function createOrder(User $user, array $shippingData): Order
     {
@@ -30,11 +23,6 @@ class OrderService
             throw new \Exception("Keranjang belanja kosong.");
         }
 
-        // ==================== DATABASE TRANSACTION START ====================
-        // Kita menggunakan DB::transaction untuk membungkus semua proses.
-        // Jika ada 1 error saja (misal stok kurang saat mau decrement),
-        // maka SEMUA query yang sudah jalan akan dibatalkan (Rollback).
-        // Order tidak akan terbentuk setengah-setengah.
         return DB::transaction(function () use ($user, $cart, $shippingData) {
             // A. VALIDASI STOK & HITUNG TOTAL
             $totalAmount = 0;
@@ -42,7 +30,14 @@ class OrderService
                 if ($item->quantity > $item->product->stock) {
                     throw new \Exception("Stok produk {$item->product->name} tidak mencukupi.");
                 }
-                $totalAmount += $item->product->discount_price * $item->quantity;
+                
+                // --- PERBAIKAN DI SINI ---
+                // Gunakan discount_price jika ada, jika tidak gunakan price asli
+                $priceToCharge = $item->product->discount_price > 0 
+                                 ? $item->product->discount_price 
+                                 : $item->product->price;
+
+                $totalAmount += $priceToCharge * $item->quantity;
             }
 
             // B. BUAT HEADER ORDER
@@ -59,32 +54,37 @@ class OrderService
 
             // C. PINDAHKAN ITEMS
             foreach ($cart->items as $item) {
+                // --- PERBAIKAN DI SINI ---
+                $currentPrice = $item->product->discount_price > 0 
+                                ? $item->product->discount_price 
+                                : $item->product->price;
+
                 $order->items()->create([
                     'product_id'   => $item->product_id,
                     'product_name' => $item->product->name,
-                    'price'        => $item->product->discount_price,
+                    'price'        => $currentPrice, // Sekarang tidak akan NULL
                     'quantity'     => $item->quantity,
-                    'subtotal'     => $item->product->discount_price * $item->quantity,
+                    'subtotal'     => $currentPrice * $item->quantity,
                 ]);
+
+                // Kurangi stok
                 $item->product->decrement('stock', $item->quantity);
             }
 
-            // D. Pastikan relasi user di-load sebelum generate Snap Token
+            // D. Load relasi & Generate Snap Token
             $order->load('user');
             $midtransService = new \App\Services\MidtransService();
             try {
                 $snapToken = $midtransService->createSnapToken($order);
                 $order->update(['snap_token' => $snapToken]);
             } catch (\Exception $e) {
-                // Jika gagal, biarkan snap_token tetap null, bisa di-handle di frontend
+                // Log error jika perlu: \Log::error($e->getMessage());
             }
 
             // E. BERSIHKAN KERANJANG
             $cart->items()->delete();
-            // $cart->delete(); // opsional
 
             return $order;
         });
-        // ==================== DATABASE TRANSACTION END ====================
     }
 }
