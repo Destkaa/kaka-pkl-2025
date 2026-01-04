@@ -7,7 +7,7 @@
     /* 1. Image Fix (Anti-Gepeng) */
     .main-image-container {
         width: 100%;
-        aspect-ratio: 1 / 1; /* Memastikan frame selalu kotak sempurna */
+        aspect-ratio: 1 / 1;
         overflow: hidden;
         display: flex;
         align-items: center;
@@ -20,7 +20,7 @@
     #main-image {
         width: 100%;
         height: 100%;
-        object-fit: contain; /* Gambar tidak akan terpotong atau gepeng */
+        object-fit: contain;
         padding: 20px;
         transition: transform 0.5s ease;
     }
@@ -29,7 +29,7 @@
         width: 80px;
         height: 80px;
         aspect-ratio: 1 / 1;
-        object-fit: cover; /* Thumbnail penuh dan rapi */
+        object-fit: cover;
         border-radius: 12px;
         transition: all 0.2s ease;
         cursor: pointer;
@@ -132,8 +132,9 @@
 
                     </span>
                     <?php if(auth()->guard()->check()): ?>
-                    <button class="btn btn-white shadow-sm rounded-circle p-2" onclick="toggleWishlist(<?php echo e($product->id); ?>)" style="width: 40px; height: 40px;">
-                        <i class="bi <?php echo e(auth()->user()->hasInWishlist($product) ? 'bi-heart-fill text-danger' : 'bi-heart'); ?> fs-5"></i>
+                    
+                    <button class="btn btn-white shadow-sm rounded-circle p-2 wishlist-btn-<?php echo e($product->id); ?>" onclick="toggleWishlist(<?php echo e($product->id); ?>)" style="width: 40px; height: 40px;">
+                        <i class="bi <?php echo e(auth()->user()->hasInWishlist($product) ? 'bi-heart-fill text-danger' : 'bi-heart text-secondary'); ?> fs-5"></i>
                     </button>
                     <?php endif; ?>
                 </div>

@@ -16,12 +16,11 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         $orders = Order::query()
-            ->with('user') // N+1 prevention: Load data user pemilik order
-            // Fitur Filter Status (?status=pending)
+            ->with('user') // N+1 prevention
             ->when($request->status, function($q, $status) {
                 $q->where('status', $status);
             })
-            ->latest() // Urutkan terbaru
+            ->latest()
             ->paginate(20);
 
         return view('admin.orders.index', compact('orders'));
@@ -32,45 +31,54 @@ class OrderController extends Controller
      */
     public function show(Order $order)
     {
-        // Load item produk dan data user
         $order->load(['items.product', 'user']);
         return view('admin.orders.show', compact('order'));
     }
 
     /**
-     * Update status pesanan (misal: kirim barang)
-     * Handle otomatis pengembalian stok jika status diubah jadi Cancelled.
+     * Update status pesanan
      */
     public function updateStatus(Request $request, Order $order)
     {
-        // Validasi status yang dikirim form
+        // FIKS: Menambahkan semua opsi status yang ada di database agar tidak error saat validasi
         $request->validate([
-            'status' => 'required|in:processing,completed,cancelled'
+            'status' => 'required|in:pending,processing,shipped,delivered,completed,cancelled'
         ]);
 
         $oldStatus = $order->status;
         $newStatus = $request->status;
 
+        // Jika status tidak berubah, tidak perlu memproses stok
+        if ($oldStatus === $newStatus) {
+            return back()->with('info', "Status sudah $newStatus");
+        }
+
         // ============================================================
         // LOGIKA RESTOCK (PENTING!)
         // ============================================================
-        // Jika admin membatalkan pesanan, stok barang harus dikembalikan ke gudang.
-        // Syarat:
-        // 1. Status baru adalah 'cancelled'
-        // 2. Status lama BUKAN 'cancelled' (agar tidak restock 2x kalau tombol ditekan berkali-kali)
-        // ============================================================
+        
+        // KASUS 1: Order DIBATALKAN (Kembalikan stok ke gudang)
         if ($newStatus === 'cancelled' && $oldStatus !== 'cancelled') {
             foreach ($order->items as $item) {
-                // increment() adalah operasi atomik (thread-safe) di level database.
-                // SQL-nya kurang lebih: UPDATE products SET stock = stock + X WHERE id = Y
-                // Ini aman dari Race Condition jika ada transaksi bersamaan.
                 $item->product->increment('stock', $item->quantity);
+            }
+        }
+
+        // KASUS 2: Order AKTIF KEMBALI (Jika sebelumnya cancelled, potong stok lagi)
+        // Ini untuk mencegah stok double jika admin salah membatalkan lalu mengaktifkan lagi
+        if ($oldStatus === 'cancelled' && $newStatus !== 'cancelled') {
+            foreach ($order->items as $item) {
+                // Cek jika stok cukup sebelum mengaktifkan kembali
+                if ($item->product->stock < $item->quantity) {
+                    return back()->with('error', "Gagal mengaktifkan order. Stok {$item->product->name} tidak mencukupi.");
+                }
+                $item->product->decrement('stock', $item->quantity);
             }
         }
 
         // Update status di database
         $order->update(['status' => $newStatus]);
 
-        return back()->with('success', "Status pesanan diperbarui menjadi $newStatus");
+        return back()->with('success', "Status pesanan #{$order->order_number} diperbarui menjadi $newStatus");
     }
 }
