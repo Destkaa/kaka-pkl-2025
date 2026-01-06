@@ -49,7 +49,7 @@
         <div class="card shadow-sm border-0 bg-light">
             <div class="card-body">
                 <h6 class="fw-bold mb-3">Update Status Order</h6>
-                <form action="<?php echo e(route('admin.orders.update-status', $order)); ?>" method="POST">
+                <form action="<?php echo e(route('admin.orders.updateStatus', $order->id)); ?>" method="POST">
                     <?php echo csrf_field(); ?>
                     <?php echo method_field('PATCH'); ?>
 

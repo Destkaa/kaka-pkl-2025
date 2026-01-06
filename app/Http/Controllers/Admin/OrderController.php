@@ -5,17 +5,17 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache; // Tambahkan ini untuk manajemen cache
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
     /**
-     * Menampilkan daftar pesanan dengan Eager Loading.
-     * Tugas 1: Mencegah N+1 Query pada relasi User.
+     * Menampilkan daftar semua pesanan
      */
     public function index()
     {
-        // Optimasi: Memuat relasi user sekaligus (Eager Loading)
         $orders = Order::with(['user'])
             ->latest()
             ->paginate(15);
@@ -24,33 +24,47 @@ class OrderController extends Controller
     }
 
     /**
-     * Menampilkan detail pesanan.
-     * Tugas 1: Mencegah N+1 pada item pesanan dan produk di dalamnya.
+     * Menampilkan detail pesanan tunggal (INI YANG TADI HILANG)
      */
     public function show(Order $order)
     {
-        // Lazy Eager Loading untuk relasi bersarang (Nested)
         $order->load(['user', 'items.product']);
-
         return view('admin.orders.show', compact('order'));
     }
 
     /**
-     * Memperbarui status pesanan.
+     * Memperbarui status pesanan (PATCH)
      */
-    public function update(Request $request, Order $order)
+    public function updateStatus(Request $request, Order $order)
     {
         $request->validate([
             'status' => 'required|in:pending,processing,shipped,completed,cancelled',
         ]);
 
-        $order->update(['status' => $request->status]);
+        try {
+            DB::beginTransaction();
 
-        // --- TUGAS 2: CACHE INVALIDATION (PENTING) ---
-        // Jika status pesanan berubah, ada kemungkinan stok produk berubah 
-        // atau status produk aktif berubah, maka kita hapus cache sidebar kategori.
-        Cache::forget('catalog_categories');
+            $order->status = $request->status;
+            $order->save();
 
-        return back()->with('success', 'Status pesanan berhasil diperbarui.');
+            // Clear cache jika diperlukan
+            try {
+                Cache::forget('catalog_categories');
+            } catch (\Exception $e) {
+                Log::warning("Cache clear failed: " . $e->getMessage());
+            }
+
+            DB::commit();
+
+            return redirect()->route('admin.orders.show', $order->id)
+                ->with('success', 'Status pesanan berhasil diperbarui!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("UPDATE ORDER FAILED: " . $e->getMessage());
+
+            return redirect()->route('admin.orders.show', $order->id)
+                ->with('error', 'Gagal memperbarui status.');
+        }
     }
 }
