@@ -1,6 +1,6 @@
 {{-- ================================================
 FILE: resources/views/partials/navbar.blade.php
-FUNGSI: Navigation bar modern dengan Ikon Katalog
+FUNGSI: Navigation bar modern dengan Dropdown Profil Elegan & Luas
 ================================================ --}}
 
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top py-3">
@@ -70,24 +70,61 @@ FUNGSI: Navigation bar modern dengan Ikon Katalog
                     </a>
                 </li>
 
-                {{-- User Dropdown --}}
+                {{-- User Dropdown - Style Baru (Lebih Luas) --}}
                 <li class="nav-item dropdown ms-lg-3">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center bg-light rounded-pill px-3 py-1 mt-2 mt-lg-0" href="#" id="userDropdown" data-bs-toggle="dropdown">
-                        <img src="{{ auth()->user()->avatar_url }}" class="rounded-circle me-2 border border-2 border-white" width="30" height="30" alt="User">
-                        <span class="small fw-bold text-dark">{{ explode(' ', auth()->user()->name)[0] }}</span>
+                    <a class="nav-link dropdown-toggle d-flex align-items-center p-0 border-0 mt-2 mt-lg-0" href="#" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="avatar-trigger d-flex align-items-center bg-light rounded-pill px-2 py-1 border border-1 shadow-sm">
+                            <img src="{{ auth()->user()->avatar_url }}" class="rounded-circle me-2" width="32" height="32" alt="User" style="object-fit: cover;">
+                            <i class="bi bi-chevron-down small text-muted me-1"></i>
+                        </div>
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 mt-2">
-                        <li><a class="dropdown-item py-2" href="{{ route('profile.edit') }}"><i class="bi bi-person me-2"></i> Profil Saya</a></li>
-                        <li><a class="dropdown-item py-2" href="{{ route('orders.index') }}"><i class="bi bi-bag me-2"></i> Pesanan Saya</a></li>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 mt-3 py-3 px-2" style="min-width: 280px;">
+                        {{-- Profil Header --}}
+                        <li class="px-3 py-3 mb-2 bg-light rounded-4 mx-2">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ auth()->user()->avatar_url }}" class="rounded-circle me-3 border border-2 border-white shadow-sm" width="45" height="45">
+                                <div class="overflow-hidden">
+                                    <h6 class="mb-0 fw-bold text-dark text-truncate">{{ auth()->user()->name }}</h6>
+                                    <small class="text-muted text-truncate d-block">{{ auth()->user()->email }}</small>
+                                </div>
+                            </div>
+                        </li>
+                        
+                        {{-- List Menu dengan Jarak Lebih Lega --}}
+                        <li class="mt-2"><a class="dropdown-item rounded-3 py-2 px-3" href="{{ route('profile.edit') }}">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-box bg-soft-primary me-3"><i class="bi bi-person text-primary"></i></div>
+                                <span>Profil Saya</span>
+                            </div>
+                        </a></li>
+
+                        <li><a class="dropdown-item rounded-3 py-2 px-3" href="{{ route('orders.index') }}">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-box bg-soft-info me-3"><i class="bi bi-bag-check text-info"></i></div>
+                                <span>Daftar Pesanan</span>
+                            </div>
+                        </a></li>
+
                         @if(auth()->user()->isAdmin())
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-primary py-2 fw-bold" href="{{ route('admin.dashboard') }}"><i class="bi bi-speedometer2 me-2"></i> Admin Panel</a></li>
+                        <li><a class="dropdown-item rounded-3 py-2 px-3" href="{{ route('admin.dashboard') }}">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-box bg-soft-warning me-3"><i class="bi bi-speedometer2 text-warning"></i></div>
+                                <span class="fw-bold text-dark">Admin Panel</span>
+                            </div>
+                        </a></li>
                         @endif
-                        <li><hr class="dropdown-divider"></li>
+
+                        <li><hr class="dropdown-divider mx-3 my-3 opacity-50"></li>
+                        
                         <li>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
-                                <button type="submit" class="dropdown-item text-danger py-2"><i class="bi bi-box-arrow-right me-2"></i> Keluar</button>
+                                <button type="submit" class="dropdown-item rounded-3 py-2 px-3 text-danger">
+                                    <div class="d-flex align-items-center">
+                                        <div class="icon-box bg-soft-danger me-3"><i class="bi bi-box-arrow-right"></i></div>
+                                        <span class="fw-bold">Keluar Akun</span>
+                                    </div>
+                                </button>
                             </form>
                         </li>
                     </ul>
@@ -111,22 +148,58 @@ FUNGSI: Navigation bar modern dengan Ikon Katalog
     .search-group { transition: all 0.3s ease; }
     .search-group:focus-within {
         border-color: var(--bs-primary) !important;
-        box-shadow: 0 0.25rem 0.5rem rgba(var(--bs-primary-rgb), 0.15) !important;
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.08) !important;
     }
-    .search-group .form-control:focus { background-color: #fff !important; }
-    .search-group:focus-within .input-group-text { background-color: #fff !important; color: var(--bs-primary) !important; }
 
     /* Katalog Icon Style */
-    .link-katalog i {
-        color: #adb5bd; /* Warna abu-abu default */
-        transition: all 0.2s ease;
+    .link-katalog i { color: #adb5bd; transition: all 0.3s ease; }
+    .link-katalog:hover i { color: var(--bs-primary); transform: rotate(90deg); }
+
+    /* Trigger Profile Pill */
+    .avatar-trigger { transition: all 0.2s; cursor: pointer; }
+    .avatar-trigger:hover { background-color: #eee !important; border-color: #ddd !important; }
+
+    /* Elegant Dropdown Styling */
+    .dropdown-menu {
+        display: block;
+        visibility: hidden;
+        opacity: 0;
+        transform: translateY(15px);
+        transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     }
-    .link-katalog:hover i {
-        color: var(--bs-primary);
-        transform: rotate(90deg); /* Efek putar sedikit saat hover */
+    .dropdown-menu.show {
+        visibility: visible;
+        opacity: 1;
+        transform: translateY(0);
     }
 
-    .navbar-nav .nav-link { color: #555; transition: color 0.2s; }
-    .navbar-nav .nav-link:hover { color: var(--bs-primary); }
-    .dropdown-item:active { background-color: var(--bs-primary); }
+    /* Icon Box inside Menu */
+    .icon-box {
+        width: 34px;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        font-size: 1rem;
+    }
+    
+    /* Background Soft Colors */
+    .bg-soft-primary { background-color: #eef2ff; }
+    .bg-soft-info { background-color: #e0f2fe; }
+    .bg-soft-warning { background-color: #fef3c7; }
+    .bg-soft-danger { background-color: #fee2e2; }
+
+    .dropdown-item {
+        font-weight: 500;
+        color: #4b5563;
+        transition: all 0.2s;
+    }
+    .dropdown-item:hover {
+        background-color: #f3f4f6;
+        padding-left: 1.5rem !important;
+    }
+
+    /* Hilangkan Arrow Default Bootstrap */
+    .dropdown-toggle::after { display: none; }
 </style>
