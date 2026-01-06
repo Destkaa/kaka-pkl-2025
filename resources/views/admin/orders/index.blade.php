@@ -34,11 +34,13 @@ FUNGSI: Manajemen Pesanan dengan Statistik & Desain Modern
         border-radius: 10px;
         font-weight: 600;
         font-size: 12px;
+        display: inline-block;
     }
     .bg-soft-warning { background-color: #fff9db; color: #f08c00; }
     .bg-soft-info    { background-color: #e7f5ff; color: #1c7ed6; }
     .bg-soft-success { background-color: #ebfbee; color: #37b24d; }
     .bg-soft-danger  { background-color: #fff5f5; color: #f03e3e; }
+    .bg-soft-secondary { background-color: #f1f3f5; color: #495057; }
 
     /* Nav Pills Modern */
     .nav-pills .nav-link {
@@ -64,13 +66,13 @@ FUNGSI: Manajemen Pesanan dengan Statistik & Desain Modern
             <p class="text-muted mb-0">Kelola dan pantau pesanan pelanggan Anda.</p>
         </div>
         <div class="col-auto">
-            <button class="btn btn-outline-dark rounded-pill px-4 fw-bold">
+            <a href="{{ route('admin.reports.export-sales') }}" class="btn btn-outline-dark rounded-pill px-4 fw-bold">
                 <i class="bi bi-download me-2"></i>Export Report
-            </button>
+            </a>
         </div>
     </div>
 
-    {{-- QUICK STATS (Optional but Recommended) --}}
+    {{-- QUICK STATS --}}
     <div class="row g-3 mb-4">
         <div class="col-md-3">
             <div class="card card-stats shadow-sm border-0 p-3">
@@ -78,10 +80,24 @@ FUNGSI: Manajemen Pesanan dengan Statistik & Desain Modern
                 <h3 class="fw-bold mb-0 mt-1">{{ $orders->total() }}</h3>
             </div>
         </div>
+        {{-- Statistik Dinamis berdasarkan Status --}}
         <div class="col-md-3">
             <div class="card card-stats shadow-sm border-0 p-3">
                 <small class="text-muted fw-bold text-uppercase text-warning">Pending</small>
-                <h3 class="fw-bold mb-0 mt-1">{{ $orders->where('status', 'pending')->count() }}</h3>
+                {{-- Kita gunakan helper count dari koleksi data yang ada --}}
+                <h3 class="fw-bold mb-0 mt-1">{{ \App\Models\Order::where('status', 'pending')->count() }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-stats shadow-sm border-0 p-3">
+                <small class="text-muted fw-bold text-uppercase text-info">Proses</small>
+                <h3 class="fw-bold mb-0 mt-1">{{ \App\Models\Order::where('status', 'processing')->count() }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-stats shadow-sm border-0 p-3">
+                <small class="text-muted fw-bold text-uppercase text-success">Selesai</small>
+                <h3 class="fw-bold mb-0 mt-1">{{ \App\Models\Order::where('status', 'completed')->count() }}</h3>
             </div>
         </div>
     </div>
@@ -100,7 +116,13 @@ FUNGSI: Manajemen Pesanan dengan Statistik & Desain Modern
                     <a class="nav-link {{ request('status') == 'processing' ? 'active' : '' }}" href="{{ route('admin.orders.index', ['status' => 'processing']) }}">Proses</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link {{ request('status') == 'shipped' ? 'active' : '' }}" href="{{ route('admin.orders.index', ['status' => 'shipped']) }}">Dikirim</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link {{ request('status') == 'completed' ? 'active' : '' }}" href="{{ route('admin.orders.index', ['status' => 'completed']) }}">Selesai</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request('status') == 'cancelled' ? 'active' : '' }}" href="{{ route('admin.orders.index', ['status' => 'cancelled']) }}">Batal</a>
                 </li>
             </ul>
         </div>
@@ -121,7 +143,7 @@ FUNGSI: Manajemen Pesanan dengan Statistik & Desain Modern
                     @forelse($orders as $order)
                         <tr>
                             <td class="ps-4">
-                                <span class="fw-bold text-dark">#{{ $order->order_number }}</span>
+                                <span class="fw-bold text-dark">#{{ $order->order_number ?? $order->id }}</span>
                             </td>
                             <td>
                                 <div class="fw-bold text-dark">{{ $order->user->name }}</div>
@@ -129,24 +151,34 @@ FUNGSI: Manajemen Pesanan dengan Statistik & Desain Modern
                             </td>
                             <td>
                                 <div class="small fw-medium">{{ $order->created_at->format('d M Y') }}</div>
-                                <div class="x-small text-muted">{{ $order->created_at->format('H:i') }} WIB</div>
+                                <div class="small text-muted">{{ $order->created_at->format('H:i') }} WIB</div>
                             </td>
                             <td>
                                 <span class="fw-bold text-dark">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span>
                             </td>
                             <td class="text-center">
-                                @if($order->status == 'pending')
-                                    <span class="badge-soft bg-soft-warning">Pending</span>
-                                @elseif($order->status == 'processing')
-                                    <span class="badge-soft bg-soft-info">Proses</span>
-                                @elseif($order->status == 'completed')
-                                    <span class="badge-soft bg-soft-success">Selesai</span>
-                                @else
-                                    <span class="badge-soft bg-soft-danger">Batal</span>
-                                @endif
+                                @switch($order->status)
+                                    @case('pending')
+                                        <span class="badge-soft bg-soft-warning">Pending</span>
+                                        @break
+                                    @case('processing')
+                                        <span class="badge-soft bg-soft-info">Proses</span>
+                                        @break
+                                    @case('shipped')
+                                        <span class="badge-soft bg-soft-info">Dikirim</span>
+                                        @break
+                                    @case('completed')
+                                        <span class="badge-soft bg-soft-success">Selesai</span>
+                                        @break
+                                    @case('cancelled')
+                                        <span class="badge-soft bg-soft-danger">Batal</span>
+                                        @break
+                                    @default
+                                        <span class="badge-soft bg-soft-secondary">{{ $order->status }}</span>
+                                @endswitch
                             </td>
                             <td class="text-end pe-4">
-                                <a href="{{ route('admin.orders.show', $order) }}" class="btn btn-sm btn-dark rounded-pill px-3 fw-bold shadow-sm">
+                                <a href="{{ route('admin.orders.show', $order->id) }}" class="btn btn-sm btn-dark rounded-pill px-3 fw-bold shadow-sm">
                                     Detail
                                 </a>
                             </td>
@@ -154,8 +186,10 @@ FUNGSI: Manajemen Pesanan dengan Statistik & Desain Modern
                     @empty
                         <tr>
                             <td colspan="6" class="text-center py-5">
-                                <i class="bi bi-cart-x display-1 text-muted opacity-25"></i>
-                                <p class="text-muted mt-3">Tidak ada data pesanan.</p>
+                                <div class="py-4">
+                                    <i class="bi bi-cart-x display-1 text-muted opacity-25"></i>
+                                    <p class="text-muted mt-3">Tidak ada data pesanan.</p>
+                                </div>
                             </td>
                         </tr>
                     @endforelse
@@ -164,7 +198,14 @@ FUNGSI: Manajemen Pesanan dengan Statistik & Desain Modern
         </div>
 
         <div class="card-footer bg-white py-3 px-4 border-0">
-            {{ $orders->links() }}
+            <div class="d-flex justify-content-between align-items-center">
+                <small class="text-muted">
+                    Menampilkan {{ $orders->firstItem() }} sampai {{ $orders->lastItem() }} dari {{ $orders->total() }} pesanan
+                </small>
+                <div>
+                    {{ $orders->appends(request()->query())->links() }}
+                </div>
+            </div>
         </div>
     </div>
 </div>

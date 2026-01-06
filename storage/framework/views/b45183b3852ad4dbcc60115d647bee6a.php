@@ -31,11 +31,13 @@
         border-radius: 10px;
         font-weight: 600;
         font-size: 12px;
+        display: inline-block;
     }
     .bg-soft-warning { background-color: #fff9db; color: #f08c00; }
     .bg-soft-info    { background-color: #e7f5ff; color: #1c7ed6; }
     .bg-soft-success { background-color: #ebfbee; color: #37b24d; }
     .bg-soft-danger  { background-color: #fff5f5; color: #f03e3e; }
+    .bg-soft-secondary { background-color: #f1f3f5; color: #495057; }
 
     /* Nav Pills Modern */
     .nav-pills .nav-link {
@@ -61,9 +63,9 @@
             <p class="text-muted mb-0">Kelola dan pantau pesanan pelanggan Anda.</p>
         </div>
         <div class="col-auto">
-            <button class="btn btn-outline-dark rounded-pill px-4 fw-bold">
+            <a href="<?php echo e(route('admin.reports.export-sales')); ?>" class="btn btn-outline-dark rounded-pill px-4 fw-bold">
                 <i class="bi bi-download me-2"></i>Export Report
-            </button>
+            </a>
         </div>
     </div>
 
@@ -75,10 +77,24 @@
                 <h3 class="fw-bold mb-0 mt-1"><?php echo e($orders->total()); ?></h3>
             </div>
         </div>
+        
         <div class="col-md-3">
             <div class="card card-stats shadow-sm border-0 p-3">
                 <small class="text-muted fw-bold text-uppercase text-warning">Pending</small>
-                <h3 class="fw-bold mb-0 mt-1"><?php echo e($orders->where('status', 'pending')->count()); ?></h3>
+                
+                <h3 class="fw-bold mb-0 mt-1"><?php echo e(\App\Models\Order::where('status', 'pending')->count()); ?></h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-stats shadow-sm border-0 p-3">
+                <small class="text-muted fw-bold text-uppercase text-info">Proses</small>
+                <h3 class="fw-bold mb-0 mt-1"><?php echo e(\App\Models\Order::where('status', 'processing')->count()); ?></h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-stats shadow-sm border-0 p-3">
+                <small class="text-muted fw-bold text-uppercase text-success">Selesai</small>
+                <h3 class="fw-bold mb-0 mt-1"><?php echo e(\App\Models\Order::where('status', 'completed')->count()); ?></h3>
             </div>
         </div>
     </div>
@@ -97,7 +113,13 @@
                     <a class="nav-link <?php echo e(request('status') == 'processing' ? 'active' : ''); ?>" href="<?php echo e(route('admin.orders.index', ['status' => 'processing'])); ?>">Proses</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link <?php echo e(request('status') == 'shipped' ? 'active' : ''); ?>" href="<?php echo e(route('admin.orders.index', ['status' => 'shipped'])); ?>">Dikirim</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link <?php echo e(request('status') == 'completed' ? 'active' : ''); ?>" href="<?php echo e(route('admin.orders.index', ['status' => 'completed'])); ?>">Selesai</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link <?php echo e(request('status') == 'cancelled' ? 'active' : ''); ?>" href="<?php echo e(route('admin.orders.index', ['status' => 'cancelled'])); ?>">Batal</a>
                 </li>
             </ul>
         </div>
@@ -118,7 +140,7 @@
                     <?php $__empty_1 = true; $__currentLoopData = $orders; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $order): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                         <tr>
                             <td class="ps-4">
-                                <span class="fw-bold text-dark">#<?php echo e($order->order_number); ?></span>
+                                <span class="fw-bold text-dark">#<?php echo e($order->order_number ?? $order->id); ?></span>
                             </td>
                             <td>
                                 <div class="fw-bold text-dark"><?php echo e($order->user->name); ?></div>
@@ -126,24 +148,34 @@
                             </td>
                             <td>
                                 <div class="small fw-medium"><?php echo e($order->created_at->format('d M Y')); ?></div>
-                                <div class="x-small text-muted"><?php echo e($order->created_at->format('H:i')); ?> WIB</div>
+                                <div class="small text-muted"><?php echo e($order->created_at->format('H:i')); ?> WIB</div>
                             </td>
                             <td>
                                 <span class="fw-bold text-dark">Rp <?php echo e(number_format($order->total_amount, 0, ',', '.')); ?></span>
                             </td>
                             <td class="text-center">
-                                <?php if($order->status == 'pending'): ?>
-                                    <span class="badge-soft bg-soft-warning">Pending</span>
-                                <?php elseif($order->status == 'processing'): ?>
-                                    <span class="badge-soft bg-soft-info">Proses</span>
-                                <?php elseif($order->status == 'completed'): ?>
-                                    <span class="badge-soft bg-soft-success">Selesai</span>
-                                <?php else: ?>
-                                    <span class="badge-soft bg-soft-danger">Batal</span>
-                                <?php endif; ?>
+                                <?php switch($order->status):
+                                    case ('pending'): ?>
+                                        <span class="badge-soft bg-soft-warning">Pending</span>
+                                        <?php break; ?>
+                                    <?php case ('processing'): ?>
+                                        <span class="badge-soft bg-soft-info">Proses</span>
+                                        <?php break; ?>
+                                    <?php case ('shipped'): ?>
+                                        <span class="badge-soft bg-soft-info">Dikirim</span>
+                                        <?php break; ?>
+                                    <?php case ('completed'): ?>
+                                        <span class="badge-soft bg-soft-success">Selesai</span>
+                                        <?php break; ?>
+                                    <?php case ('cancelled'): ?>
+                                        <span class="badge-soft bg-soft-danger">Batal</span>
+                                        <?php break; ?>
+                                    <?php default: ?>
+                                        <span class="badge-soft bg-soft-secondary"><?php echo e($order->status); ?></span>
+                                <?php endswitch; ?>
                             </td>
                             <td class="text-end pe-4">
-                                <a href="<?php echo e(route('admin.orders.show', $order)); ?>" class="btn btn-sm btn-dark rounded-pill px-3 fw-bold shadow-sm">
+                                <a href="<?php echo e(route('admin.orders.show', $order->id)); ?>" class="btn btn-sm btn-dark rounded-pill px-3 fw-bold shadow-sm">
                                     Detail
                                 </a>
                             </td>
@@ -151,8 +183,10 @@
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                         <tr>
                             <td colspan="6" class="text-center py-5">
-                                <i class="bi bi-cart-x display-1 text-muted opacity-25"></i>
-                                <p class="text-muted mt-3">Tidak ada data pesanan.</p>
+                                <div class="py-4">
+                                    <i class="bi bi-cart-x display-1 text-muted opacity-25"></i>
+                                    <p class="text-muted mt-3">Tidak ada data pesanan.</p>
+                                </div>
                             </td>
                         </tr>
                     <?php endif; ?>
@@ -161,8 +195,15 @@
         </div>
 
         <div class="card-footer bg-white py-3 px-4 border-0">
-            <?php echo e($orders->links()); ?>
+            <div class="d-flex justify-content-between align-items-center">
+                <small class="text-muted">
+                    Menampilkan <?php echo e($orders->firstItem()); ?> sampai <?php echo e($orders->lastItem()); ?> dari <?php echo e($orders->total()); ?> pesanan
+                </small>
+                <div>
+                    <?php echo e($orders->appends(request()->query())->links()); ?>
 
+                </div>
+            </div>
         </div>
     </div>
 </div>

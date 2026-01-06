@@ -1,8 +1,3 @@
-{{-- ================================================
-     FILE: resources/views/layouts/admin.blade.php
-     FUNGSI: Master layout admin (Fixed Error 500)
-     ================================================ --}}
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -43,6 +38,18 @@
             padding: 15px 25px 5px;
             text-transform: uppercase;
         }
+        /* Style Tambahan untuk Tombol Lihat Toko */
+        .btn-view-store {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+        .btn-view-store:hover {
+            background: #fff;
+            color: #1e3a5f;
+        }
     </style>
     @stack('styles')
 </head>
@@ -55,6 +62,12 @@
                     <i class="bi bi-shop fs-4 me-2"></i>
                     <span class="fs-5 fw-bold">Admin Panel</span>
                 </a>
+                {{-- TAMBAHAN: Tombol Lihat Toko di Bawah Judul Admin --}}
+                <div class="px-2 mt-2">
+                    <a href="/" target="_blank" class="btn btn-view-store w-100 rounded-pill py-1">
+                        <i class="bi bi-eye me-2"></i> Lihat Toko
+                    </a>
+                </div>
             </div>
 
             <nav class="flex-grow-1 py-3 overflow-auto">
@@ -67,22 +80,21 @@
 
                     <li class="nav-section-title">Katalog & Stok</li>
                     <li class="nav-item">
-                        <a href="{{ Route::has('admin.products.index') ? route('admin.products.index') : '#' }}" class="nav-link">
+                        <a href="{{ Route::has('admin.products.index') ? route('admin.products.index') : '#' }}" class="nav-link {{ request()->routeIs('admin.products.*') ? 'active' : '' }}">
                             <i class="bi bi-box-seam me-2"></i> Produk
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{{ Route::has('admin.categories.index') ? route('admin.categories.index') : '#' }}" class="nav-link">
+                        <a href="{{ Route::has('admin.categories.index') ? route('admin.categories.index') : '#' }}" class="nav-link {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
                             <i class="bi bi-folder me-2"></i> Kategori
                         </a>
                     </li>
 
                     <li class="nav-section-title">Transaksi</li>
                     <li class="nav-item">
-                        <a href="{{ Route::has('admin.orders.index') ? route('admin.orders.index') : '#' }}" class="nav-link">
+                        <a href="{{ route('admin.orders.index') }}" class="nav-link {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
                             <i class="bi bi-receipt me-2"></i> <span class="flex-grow-1">Pesanan</span>
                             @php
-                                // Menggunakan try-catch agar tidak 500 jika tabel belum ada/model salah
                                 try {
                                     $pendingCount = \App\Models\Order::where('status', 'pending')->count();
                                 } catch (\Exception $e) { $pendingCount = 0; }
@@ -95,14 +107,14 @@
 
                     <li class="nav-section-title">Management</li>
                     <li class="nav-item">
-                        <a href="{{ Route::has('admin.users.index') ? route('admin.users.index') : '#' }}" class="nav-link">
+                        <a href="{{ Route::has('admin.users.index') ? route('admin.users.index') : '#' }}" class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                             <i class="bi bi-people me-2"></i> Pengguna
                         </a>
                     </li>
 
                     <li class="nav-section-title">Laporan</li>
                     <li class="nav-item">
-                        <a href="{{ Route::has('admin.reports.sales') ? route('admin.reports.sales') : '#' }}" class="nav-link">
+                        <a href="{{ Route::has('admin.reports.sales') ? route('admin.reports.sales') : '#' }}" class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
                             <i class="bi bi-graph-up me-2"></i> Laporan Penjualan
                         </a>
                     </li>
@@ -122,17 +134,42 @@
         {{-- Main Content --}}
         <div class="flex-grow-1">
             <header class="bg-white shadow-sm py-3 px-4 d-flex justify-content-between align-items-center sticky-top">
-                <h4 class="mb-0 fw-bold">@yield('page-title', 'Dashboard')</h4>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">Logout</button>
-                </form>
+                <div class="d-flex align-items-center">
+                    <h4 class="mb-0 fw-bold me-3">@yield('page-title', 'Dashboard')</h4>
+                    {{-- TAMBAHAN: Tombol Lihat Toko di Header (Badge Style) --}}
+                    <a href="/" target="_blank" class="btn btn-sm btn-light border rounded-pill px-3 d-none d-md-block">
+                        <i class="bi bi-box-arrow-up-right me-1"></i> Buka Toko
+                    </a>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    <span class="text-muted small d-none d-md-block me-2">{{ now()->format('d M Y') }}</span>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-danger rounded-pill px-3">
+                            <i class="bi bi-box-arrow-right me-1"></i> Logout
+                        </button>
+                    </form>
+                </div>
             </header>
 
             <main class="p-4">
+                {{-- Alert Success --}}
                 @if(session('success'))
-                    <div class="alert alert-success">{{ session('success') }}</div>
+                    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+                        <i class="bi bi-check-circle me-2"></i> {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
                 @endif
+
+                {{-- Alert Error --}}
+                @if(session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+                        <i class="bi bi-exclamation-triangle me-2"></i> {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+
                 @yield('content')
             </main>
         </div>
