@@ -1,51 +1,89 @@
 <?php
+// app/Http/Controllers/OrderController.php
 
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use Midtrans\Config;
+use Midtrans\Snap;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
+    /**
+     * Menampilkan daftar pesanan milik user yang sedang login.
+     */
     public function index()
     {
-        $orders = Auth::user()->orders()->latest()->paginate(10);
+        // PENTING: Jangan gunakan Order::all() !
+        // Kita hanya mengambil order milik user yg sedang login menggunakan relasi hasMany.
+        // auth()->user()->orders() akan otomatis memfilter: WHERE user_id = current_user_id
+        $orders = auth()->user()->orders()
+            ->with(['items.product']) // Eager Load nested: Order -> OrderItems -> Product
+            ->latest() // Urutkan dari pesanan terbaru
+            ->paginate(10);
+
         return view('orders.index', compact('orders'));
     }
 
-    public function pay(Order $order)
-    {
-        if ($order->user_id !== Auth::id()) {
-            abort(403);
-        }
-        // Redirect ke detail untuk menampilkan Snap Token Midtrans
-        return redirect()->route('orders.show', $order->id);
-    }
-
+    /**
+     * Menampilkan detail satu pesanan.
+     */
     public function show(Order $order)
     {
-        if ($order->user_id !== Auth::id()) {
-            abort(403);
+        // 1. Authorize (Security Check)
+        // User A TIDAK BOLEH melihat pesanan User B.
+        // Kita cek apakah ID pemilik order sama dengan ID user yang login.
+        if ($order->user_id !== auth()->id()) {
+            abort(403, 'Anda tidak memiliki akses ke pesanan ini.');
         }
 
-        $order->load('items.product');
-        return view('orders.show', compact('order'));
+        // Ambil snap_token dari database (jika ada)
+        // Jika kolom di DB namanya snap_token, kita ambil itu
+        $snapToken = $order->snap_token;
+
+        // Jika status masih pending DAN belum punya snap_token di database
+    if ($order->status === 'pending' && !$snapToken) {
+        // 1. Konfigurasi Midtrans
+        Config::$serverKey = config('midtrans.server_key');
+        Config::$isProduction = config('midtrans.is_production');
+        Config::$isSanitized = true;
+        Config::$is3ds = true;
+
+        // 2. Buat parameter transaksi
+        $params = [
+            'transaction_details' => [
+                'order_id' => $order->order_number,
+                'gross_amount' => (int) $order->total_amount,
+            ],
+            'customer_details' => [
+                'first_name' => auth()->user()->name,
+                'email' => auth()->user()->email,
+                'phone' => $order->shipping_phone,
+            ],
+            // TAMBAHKAN INI:
+            'callbacks' => [
+            'finish' => route('orders.success', $order->id),
+            'unfinish' => route('orders.show', $order->id),
+            'error' => route('orders.show', $order->id),
+            ],
+        ];
+
+        try {
+            // 3. Minta token dari Midtrans
+            $snapToken = Snap::getSnapToken($params);
+
+            // 4. Simpan token ke database agar tidak request ulang terus-menerus
+            $order->update(['snap_token' => $snapToken]);
+        } catch (\Exception $e) {
+            // Jika gagal (misal server key salah), log errornya
+            \Log::error('Midtrans Error: ' . $e->getMessage());
+        }
     }
+        // 2. Load relasi detail
+        // Kita butuh data items dan gambar produknya untuk ditampilkan di invoice view.
+        $order->load(['items.product', 'items.product.primaryImage']);  
 
-    public function success(Order $order)
-    {
-        if ($order->user_id !== Auth::id()) {
-            abort(403);
-        }
-        return view('orders.success', compact('order'));
-    }
-
-    public function pending(Order $order)
-    {
-        if ($order->user_id !== Auth::id()) {
-            abort(403);
-        }
-        return view('orders.pending', compact('order'));
+        return view('orders.show', compact('order', 'snapToken'));
     }
 }

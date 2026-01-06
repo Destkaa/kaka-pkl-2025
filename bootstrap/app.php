@@ -1,5 +1,4 @@
 <?php
-// bootstrap/app.php
 
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -27,6 +26,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'midtrans/*',            // Wildcard (jika ada route lain)
         ]);
     })
-    ->withExceptions(function (Exceptions $exceptions) {
+    ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();

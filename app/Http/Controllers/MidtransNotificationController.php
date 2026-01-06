@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Payment;
+use App\Events\OrderPaidEvent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -83,17 +84,20 @@ class MidtransNotificationController extends Controller
         // Kita harus pastikan logika kita aman jika dipanggil double.
         // Jika order sudah berstatus final (processing/shipped/delivered), stop.
         // ============================================================
-        if (in_array($order->status, ['processing', 'shipped', 'delivered', 'cancelled'])) {
+        //FIXME: menghapus beberapa status
+        if (in_array($order->status, ['processing', 'completed', 'cancelled'])) {
             Log::info("Midtrans Notification: Order already processed", ['order_id' => $orderId]);
             return response()->json(['message' => 'Order already processed'], 200);
         }
 
         // 7. Update Data Tambahan di Payment Record
         // Simpan transaction_id dari Midtrans untuk referensi refund nanti
+        //FIXME: menambahkan midtrans order id
         $payment = $order->payment;
         if ($payment) {
             $payment->update([
                 'midtrans_transaction_id' => $transactionId,
+                'midtrans_order_id'       => $orderId,
                 'payment_type'            => $paymentType,
                 'raw_response'            => json_encode($payload),
             ]);
@@ -130,19 +134,20 @@ class MidtransNotificationController extends Controller
                 $this->handleFailed($order, $payment, 'Pembayaran ditolak');
                 break;
 
-            case 'expire':
-                // Token expired (tidak dibayar tepat waktu)
-                $this->handleFailed($order, $payment, 'Pembayaran kadaluarsa');
-                break;
-
-            case 'cancel':
-                // Dibatalkan user/admin
-                $this->handleFailed($order, $payment, 'Pembayaran dibatalkan');
-                break;
-
             case 'refund':
             case 'partial_refund':
                 $this->handleRefund($order, $payment);
+                break;
+
+            case 'expire':
+            case 'cancel':
+                if ($order->status !== 'cancelled') {
+                    // Restock Logic
+                    foreach ($order->items as $item) {
+                        $item->product->increment('stock', $item->quantity);
+                    }
+                    $order->update(['payment_status' => 'failed', 'status' => 'cancelled']);
+                }
                 break;
 
             default:
@@ -161,6 +166,7 @@ class MidtransNotificationController extends Controller
     /**
      * Handle pembayaran sukses.
      */
+    //FIXME: menambahkan payment status di update order
     protected function handleSuccess(Order $order, ?Payment $payment): void
     {
         Log::info("Payment SUCCESS for Order: {$order->order_number}");
@@ -168,7 +174,7 @@ class MidtransNotificationController extends Controller
         // Update Order
         $order->update([
             'status' => 'processing', // Siap diproses/dikirim
-            'payment_status' => 'paid', // Tandai sudah dibayar
+            'payment_status' => 'paid',
         ]);
 
         // Update Payment
@@ -236,5 +242,18 @@ class MidtransNotificationController extends Controller
         }
 
         // TODO: Logic tambahan untuk refund
+    }
+
+    // Fire OrderPaidEvent
+    //FIXME: menambahkan event order paid
+    private function setSuccess(Order $order)
+    {
+        $order->update([
+            'status' => 'processing',
+            'payment_status' => 'paid',
+        ]);
+
+        // Fire & Forget
+        event(new OrderPaidEvent($order));
     }
 }

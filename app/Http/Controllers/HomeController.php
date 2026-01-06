@@ -1,76 +1,70 @@
 <?php
 // ================================================
 // FILE: app/Http/Controllers/HomeController.php
-// FUNGSI: Menangani halaman utama website
+// FUNGSI: Menangani halaman utama website dengan Query Efficiency
 // ================================================
 
 namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Product;
+use Illuminate\Support\Facades\Cache;
 
 class HomeController extends Controller
 {
     /**
      * Menampilkan halaman beranda.
-     *
-     * Halaman ini menampilkan:
-     * - Hero section (static)
-     * - Kategori populer
-     * - Produk unggulan (featured)
-     * - Produk terbaru
+     * * Optimasi Tugas 3:
+     * - Menggunakan select() untuk mengambil kolom yang diperlukan saja.
+     * - Membatasi jumlah data dengan take().
+     * - Eager loading relasi untuk mencegah N+1.
      */
     public function index()
     {
         // ================================================
-        // AMBIL DATA KATEGORI
-        // - Hanya yang aktif
-        // - Hitung jumlah produk di masing-masing kategori
+        // 1. DATA KATEGORI (Optimasi: Select kolom & Cache)
         // ================================================
         $categories = Category::query()
-            ->active() // Scope: hanya is_active = true
+            ->select(['id', 'name', 'slug', 'image']) // Hanya ambil yang tampil di UI
+            ->active()
             ->withCount(['activeProducts' => function ($q) {
                 $q->where('is_active', true)
-                    ->where('stock', '>', 0);
+                  ->where('stock', '>', 0);
             }])
-            ->having('active_products_count', '>', 0) // Hanya yang punya produk
+            ->having('active_products_count', '>', 0)
             ->orderBy('name')
-            ->take(6) // Batasi 6 kategori
+            ->take(6)
             ->get();
 
-        // Debug: pastikan Category yang dipakai benar
-        // Hapus baris ini setelah debug
-        // dd(Category::class);
-
         // ================================================
-        // PRODUK UNGGULAN (FEATURED)
-        // - Flag is_featured = true
-        // - Aktif dan ada stok
+        // 2. PRODUK UNGGULAN (FEATURED)
+        // Optimasi: Select kolom agar tidak load 'description' yang berat
         // ================================================
         $featuredProducts = Product::query()
-            ->with(['category', 'primaryImage']) // Eager load untuk performa
-            ->active()                           // Scope: is_active = true
-            ->inStock()                          // Scope: stock > 0
-            ->featured()                         // Scope: is_featured = true
+            ->select(['id', 'name', 'slug', 'price', 'discount_price', 'category_id', 'stock'])
+            ->with(['category:id,name', 'primaryImage']) // Eager load kolom tertentu dari relasi
+            ->active()
+            ->inStock()
+            ->featured()
             ->latest()
             ->take(8)
             ->get();
 
         // ================================================
-        // PRODUK TERBARU
-        // - Urutkan dari yang paling baru
+        // 3. PRODUK TERBARU
+        // Optimasi: Membatasi resource memory dengan select()
         // ================================================
         $latestProducts = Product::query()
-            ->with(['category', 'primaryImage'])
+            ->select(['id', 'name', 'slug', 'price', 'discount_price', 'category_id', 'stock'])
+            ->with(['category:id,name', 'primaryImage'])
             ->active()
             ->inStock()
-            ->latest() // Order by created_at DESC
+            ->latest()
             ->take(8)
             ->get();
 
         // ================================================
-        // KIRIM DATA KE VIEW
-        // compact() membuat array ['key' => $key]
+        // 4. KIRIM DATA KE VIEW
         // ================================================
         return view('home', compact(
             'categories',

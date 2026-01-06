@@ -14,14 +14,14 @@ class User extends Authenticatable
 
     /**
      * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
+     * Perbaikan Keamanan: Menghapus 'role' dari fillable untuk mencegah 
+     * Mass Assignment Attack (user mengubah dirinya jadi admin).
      */
     protected $fillable = [
         'name',
         'email',
         'password',
-        'role',
+        // 'role', // Dihapus demi keamanan
         'avatar',
         'google_id',
         'phone',
@@ -30,8 +30,6 @@ class User extends Authenticatable
 
     /**
      * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
      */
     protected $hidden = [
         'password',
@@ -40,8 +38,6 @@ class User extends Authenticatable
 
     /**
      * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
      */
     protected function casts(): array
     {
@@ -90,7 +86,6 @@ class User extends Authenticatable
 
     /**
      * Aksesor untuk mendapatkan URL Avatar yang valid.
-     * Menangani file lokal, URL eksternal (Google), dan fallback inisial.
      */
     public function getAvatarUrlAttribute(): string
     {
@@ -101,16 +96,14 @@ class User extends Authenticatable
             return $avatarPath;
         }
 
-        // 2. Jika avatar adalah path file lokal (misal: 'avatars/gambar.jpg')
+        // 2. Jika avatar adalah path file lokal
         if ($avatarPath) {
-            // Pastikan file benar-benar ada di folder storage/app/public
             if (Storage::disk('public')->exists($avatarPath)) {
                 return Storage::disk('public')->url($avatarPath);
             }
         }
 
-        // 3. Fallback: Gunakan UI Avatars jika tidak ada foto
-        // Ini akan menampilkan inisial nama user (misal: "JD" untuk John Doe)
+        // 3. Fallback: UI Avatars
         return "https://ui-avatars.com/api/?name=" . urlencode($this->name) . "&color=7F9CF5&background=EBF4FF";
     }
 

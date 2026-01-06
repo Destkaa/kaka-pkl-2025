@@ -11,17 +11,28 @@ class CartController extends Controller
 {
     protected $cartService;
 
-    // Inject Service melalui Constructor
     public function __construct(CartService $cartService)
     {
         $this->cartService = $cartService;
     }
 
+    /**
+     * Menampilkan halaman keranjang belanja.
+     * Perbaikan: Memastikan kolom kunci relasi (id & product_id) selalu ada.
+     */
     public function index()
     {
         $cart = $this->cartService->getCart();
-        // Load produk dan gambar untuk ditampilkan
-        $cart->load(['items.product.primaryImage']);
+
+        // Eager Loading dengan pengaman kolom
+        $cart->load(['items.product' => function($query) {
+            // id: wajib agar relasi ke CartItem tersambung
+            $query->select(['id', 'name', 'slug', 'price', 'stock'])
+                  ->with(['primaryImage' => function($q) {
+                      // id & product_id: wajib agar gambar nempel ke produk
+                      $q->select(['id', 'product_id', 'image_path']);
+                  }]);
+        }]);
 
         return view('cart.index', compact('cart'));
     }
@@ -34,7 +45,10 @@ class CartController extends Controller
         ]);
 
         try {
-            $product = Product::findOrFail($request->product_id);
+            // Ambil kolom minimalis untuk pengecekan
+            $product = Product::select(['id', 'name', 'price', 'stock', 'is_active'])
+                ->findOrFail($request->product_id);
+                
             $this->cartService->addProduct($product, $request->quantity);
 
             return back()->with('success', 'Produk berhasil ditambahkan ke keranjang!');

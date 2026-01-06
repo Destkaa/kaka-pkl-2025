@@ -1,3 +1,4 @@
+{{-- resources/views/catalog/show.blade.php --}}
 @extends('layouts.app')
 
 @section('title', $product->name)
@@ -42,19 +43,22 @@
         transform: translateY(-3px); 
     }
 
-    /* 2. Soft UI Elements */
+    /* 2. PERBAIKAN TOMBOL JUMLAH (ANTI-GEPENG) */
     .qty-input-group {
         background: #f1f5f9;
         border-radius: 50px;
-        padding: 6px;
+        padding: 4px;
         display: inline-flex;
         align-items: center;
         border: 1px solid #e2e8f0;
+        width: 150px; /* Lebar tetap agar proporsional */
+        justify-content: space-between;
     }
 
     .qty-btn {
-        width: 38px;
-        height: 38px;
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px; /* Mengunci agar tetap bulat */
         border-radius: 50% !important;
         background: white;
         border: none;
@@ -63,10 +67,35 @@
         justify-content: center;
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         transition: all 0.2s;
+        padding: 0;
+        color: #475569;
     }
 
-    .qty-btn:hover { background: var(--bs-primary); color: white; }
+    .qty-btn:hover { 
+        background: var(--bs-primary); 
+        color: white; 
+    }
 
+    #quantity {
+        width: 45px;
+        border: none;
+        background: transparent;
+        text-align: center;
+        font-weight: 700;
+        font-size: 1.1rem;
+        padding: 0;
+        outline: none;
+        appearance: textfield;
+        -moz-appearance: textfield;
+    }
+
+    #quantity::-webkit-outer-spin-button,
+    #quantity::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    /* 3. Soft UI Elements */
     .dot-status {
         width: 10px;
         height: 10px;
@@ -131,7 +160,6 @@
                         {{ $product->category->name }}
                     </span>
                     @auth
-                    {{-- SINKRONISASI: Menambahkan class wishlist-btn-ID dan text-secondary untuk status tidak aktif --}}
                     <button class="btn btn-white shadow-sm rounded-circle p-2 wishlist-btn-{{ $product->id }}" onclick="toggleWishlist({{ $product->id }})" style="width: 40px; height: 40px;">
                         <i class="bi {{ auth()->user()->hasInWishlist($product) ? 'bi-heart-fill text-danger' : 'bi-heart text-secondary' }} fs-5"></i>
                     </button>
@@ -167,21 +195,22 @@
                     @csrf
                     <input type="hidden" name="product_id" value="{{ $product->id }}">
 
-                    <div class="row g-4 align-items-end">
-                        <div class="col-md-5">
-                            <label class="form-label fw-bold small text-muted text-uppercase mb-2">Jumlah</label>
-                            <div class="qty-input-group w-100 justify-content-between">
+                    <div class="row g-4 align-items-center">
+                        <div class="col-auto">
+                            <label class="form-label fw-bold small text-muted text-uppercase d-block mb-2">Jumlah</label>
+                            <div class="qty-input-group">
                                 <button type="button" class="qty-btn" onclick="decrementQty()">
-                                    <i class="bi bi-dash"></i>
+                                    <i class="bi bi-dash-lg"></i>
                                 </button>
                                 <input type="number" name="quantity" id="quantity" value="1" min="1" 
-                                       max="{{ $product->stock }}" class="form-control border-0 bg-transparent text-center fw-bold fs-5" readonly>
+                                       max="{{ $product->stock }}" readonly>
                                 <button type="button" class="qty-btn" onclick="incrementQty()">
-                                    <i class="bi bi-plus"></i>
+                                    <i class="bi bi-plus-lg"></i>
                                 </button>
                             </div>
                         </div>
-                        <div class="col-md-7">
+                        <div class="col">
+                            <label class="form-label d-block mb-2 invisible">Action</label>
                             <button type="submit" class="btn btn-primary btn-lg btn-pill w-100 shadow-lg" 
                                     @if($product->stock == 0) disabled @endif>
                                 <i class="bi bi-cart-plus me-2"></i> Tambah Keranjang

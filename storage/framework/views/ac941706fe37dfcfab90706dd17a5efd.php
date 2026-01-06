@@ -10,12 +10,16 @@
     <title><?php echo $__env->yieldContent('title'); ?> - Admin Panel</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
     <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
 
     <style>
+        body { font-family: 'Inter', sans-serif; }
         .sidebar {
             min-height: 100vh;
             background: linear-gradient(180deg, #1e3a5f 0%, #0f172a 100%);
+            position: sticky; top: 0; z-index: 1000;
         }
         .sidebar .nav-link {
             color: rgba(255,255,255,0.7);
@@ -23,14 +27,18 @@
             border-radius: 8px;
             margin: 4px 12px;
             transition: all 0.2s;
+            display: flex; align-items: center;
         }
-        .sidebar .nav-link:hover,
-        .sidebar .nav-link.active {
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
             background: rgba(255,255,255,0.1);
             color: #fff;
         }
-        .sidebar .nav-link i {
-            width: 24px;
+        .nav-section-title {
+            font-size: 0.65rem;
+            letter-spacing: 1.2px;
+            color: rgba(255,255,255,0.4);
+            padding: 15px 25px 5px;
+            text-transform: uppercase;
         }
     </style>
     <?php echo $__env->yieldPushContent('styles'); ?>
@@ -38,52 +46,71 @@
 <body class="bg-light">
     <div class="d-flex">
         
-        <div class="sidebar d-flex flex-column" style="width: 260px;">
-            
-            <div class="p-3 border-bottom border-secondary">
-                <a href="<?php echo e(route('admin.dashboard')); ?>" class="text-white text-decoration-none d-flex align-items-center">
+        <div class="sidebar d-flex flex-column shadow" style="width: 260px;">
+            <div class="p-3 border-bottom border-secondary border-opacity-25">
+                <a href="<?php echo e(route('admin.dashboard')); ?>" class="text-white text-decoration-none d-flex align-items-center p-2">
                     <i class="bi bi-shop fs-4 me-2"></i>
                     <span class="fs-5 fw-bold">Admin Panel</span>
                 </a>
             </div>
 
-            
-            <nav class="flex-grow-1 py-3">
+            <nav class="flex-grow-1 py-3 overflow-auto">
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a href="<?php echo e(route('admin.dashboard')); ?>"
-                           class="nav-link <?php echo e(request()->routeIs('admin.dashboard') ? 'active' : ''); ?>">
+                        <a href="<?php echo e(route('admin.dashboard')); ?>" class="nav-link <?php echo e(request()->routeIs('admin.dashboard') ? 'active' : ''); ?>">
                             <i class="bi bi-speedometer2 me-2"></i> Dashboard
                         </a>
                     </li>
 
+                    <li class="nav-section-title">Katalog & Stok</li>
                     <li class="nav-item">
-                        <a href="<?php echo e(route('admin.products.index')); ?>"
-                           class="nav-link <?php echo e(request()->routeIs('admin.products.*') ? 'active' : ''); ?>">
+                        <a href="<?php echo e(Route::has('admin.products.index') ? route('admin.products.index') : '#'); ?>" class="nav-link">
                             <i class="bi bi-box-seam me-2"></i> Produk
                         </a>
                     </li>
-
                     <li class="nav-item">
-                        <a href="<?php echo e(route('admin.categories.index')); ?>"
-                           class="nav-link <?php echo e(request()->routeIs('admin.categories.*') ? 'active' : ''); ?>">
+                        <a href="<?php echo e(Route::has('admin.categories.index') ? route('admin.categories.index') : '#'); ?>" class="nav-link">
                             <i class="bi bi-folder me-2"></i> Kategori
                         </a>
                     </li>
 
+                    <li class="nav-section-title">Transaksi</li>
                     <li class="nav-item">
-                        <a href="<?php echo e(route('admin.orders.index')); ?>"
-                           class="nav-link <?php echo e(request()->routeIs('admin.orders.*') ? 'active' : ''); ?>">
-                            <i class="bi bi-receipt me-2"></i> Pesanan
-                            
-                            
-            <div class="p-3 border-top border-secondary">
+                        <a href="<?php echo e(Route::has('admin.orders.index') ? route('admin.orders.index') : '#'); ?>" class="nav-link">
+                            <i class="bi bi-receipt me-2"></i> <span class="flex-grow-1">Pesanan</span>
+                            <?php
+                                // Menggunakan try-catch agar tidak 500 jika tabel belum ada/model salah
+                                try {
+                                    $pendingCount = \App\Models\Order::where('status', 'pending')->count();
+                                } catch (\Exception $e) { $pendingCount = 0; }
+                            ?>
+                            <?php if($pendingCount > 0): ?>
+                                <span class="badge bg-warning text-dark"><?php echo e($pendingCount); ?></span>
+                            <?php endif; ?>
+                        </a>
+                    </li>
+
+                    <li class="nav-section-title">Management</li>
+                    <li class="nav-item">
+                        <a href="<?php echo e(Route::has('admin.users.index') ? route('admin.users.index') : '#'); ?>" class="nav-link">
+                            <i class="bi bi-people me-2"></i> Pengguna
+                        </a>
+                    </li>
+
+                    <li class="nav-section-title">Laporan</li>
+                    <li class="nav-item">
+                        <a href="<?php echo e(Route::has('admin.reports.sales') ? route('admin.reports.sales') : '#'); ?>" class="nav-link">
+                            <i class="bi bi-graph-up me-2"></i> Laporan Penjualan
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="p-3 border-top border-secondary border-opacity-25">
                 <div class="d-flex align-items-center text-white">
-                    <img src="<?php echo e(auth()->user()->avatar_url); ?>"
-                         class="rounded-circle me-2" width="36" height="36">
-                    <div class="flex-grow-1">
-                        <div class="small fw-medium"><?php echo e(auth()->user()->name); ?></div>
-                        <div class="small text-muted">Administrator</div>
+                    <div class="flex-grow-1 overflow-hidden">
+                        <div class="small fw-bold"><?php echo e(auth()->user()->name); ?></div>
+                        <div class="small text-muted" style="font-size: 0.7rem;">Administrator</div>
                     </div>
                 </div>
             </div>
@@ -91,34 +118,22 @@
 
         
         <div class="flex-grow-1">
-            
-            <header class="bg-white shadow-sm py-3 px-4 d-flex justify-content-between align-items-center">
-                <h4 class="mb-0"><?php echo $__env->yieldContent('page-title', 'Dashboard'); ?></h4>
-                <div class="d-flex align-items-center">
-                    <a href="<?php echo e(route('home')); ?>" class="btn btn-outline-secondary btn-sm me-2" target="_blank">
-                        <i class="bi bi-box-arrow-up-right me-1"></i> Lihat Toko
-                    </a>
-                    <form method="POST" action="<?php echo e(route('logout')); ?>" class="d-inline">
-                        <?php echo csrf_field(); ?>
-                        <button type="submit" class="btn btn-outline-danger btn-sm">
-                            <i class="bi bi-box-arrow-right me-1"></i> Logout
-                        </button>
-                    </form>
-                </div>
+            <header class="bg-white shadow-sm py-3 px-4 d-flex justify-content-between align-items-center sticky-top">
+                <h4 class="mb-0 fw-bold"><?php echo $__env->yieldContent('page-title', 'Dashboard'); ?></h4>
+                <form method="POST" action="<?php echo e(route('logout')); ?>">
+                    <?php echo csrf_field(); ?>
+                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">Logout</button>
+                </form>
             </header>
 
-            
-            <div class="px-4 pt-3">
-                <?php echo $__env->make('partials.flash-messages', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
-            </div>
-
-            
             <main class="p-4">
+                <?php if(session('success')): ?>
+                    <div class="alert alert-success"><?php echo e(session('success')); ?></div>
+                <?php endif; ?>
                 <?php echo $__env->yieldContent('content'); ?>
             </main>
         </div>
     </div>
-
     <?php echo $__env->yieldPushContent('scripts'); ?>
 </body>
 </html><?php /**PATH C:\xampp\htdocs\gadget-murah\resources\views/layouts/admin.blade.php ENDPATH**/ ?>
