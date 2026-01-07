@@ -11,7 +11,6 @@ class PaymentController extends Controller
 {
     /**
      * Mengambil Snap Token untuk order ini (API Endpoint).
-     * Dipanggil via AJAX dari frontend saat user klik "Bayar".
      */
     public function getSnapToken(Order $order, MidtransService $midtransService)
     {
@@ -39,29 +38,19 @@ class PaymentController extends Controller
         }
     }
 
+    /**
+     * Halaman sukses setelah pembayaran (Redirect dari Midtrans).
+     * Sesuai dengan error: Method App\Http\Controllers\PaymentController::success does not exist.
+     */
     public function success(Order $order)
     {
-        // pastikan hanya pemilik order
+        // Pastikan hanya pemilik order yang bisa melihat halaman ini
         if ($order->user_id !== auth()->id()) {
             abort(403);
         }
 
-        // jangan update ulang kalau sudah paid
-        if ($order->payment_status !== 'paid') {
-            $order->update([
-                'payment_status' => 'paid',
-                'paid_at' => now(),
-            ]);
-        }
-
+        // Jika status di DB masih pending, kita bisa beri pesan "Sedang Diproses"
+        // Tapi jika sudah diproses oleh Webhook/Queue, tampilkan "Sukses"
         return view('orders.success', compact('order'));
-    }
-
-    public function pending(Order $order)
-    {
-        // Optional: pastikan order milik user
-        abort_if($order->user_id !== auth()->id(), 403);
-
-        return view('orders.pending', compact('order'));
     }
 }

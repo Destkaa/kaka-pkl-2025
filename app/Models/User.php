@@ -1,4 +1,5 @@
 <?php
+// app/Models/User.php
 
 namespace App\Models;
 
@@ -13,15 +14,13 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
-     * Perbaikan Keamanan: Menghapus 'role' dari fillable untuk mencegah 
-     * Mass Assignment Attack (user mengubah dirinya jadi admin).
+     * Kolom yang boleh diisi secara mass-assignment.
      */
     protected $fillable = [
         'name',
         'email',
         'password',
-        // 'role', // Dihapus demi keamanan
+        'role',
         'avatar',
         'google_id',
         'phone',
@@ -29,7 +28,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Kolom yang disembunyikan saat serialisasi ke JSON/array.
      */
     protected $hidden = [
         'password',
@@ -37,7 +36,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * Casting tipe data otomatis.
      */
     protected function casts(): array
     {
@@ -49,16 +48,25 @@ class User extends Authenticatable
 
     // ==================== RELATIONSHIPS ====================
 
+    /**
+     * User memiliki satu keranjang aktif.
+     */
     public function cart()
     {
         return $this->hasOne(Cart::class);
     }
 
+    /**
+     * User memiliki banyak pesanan.
+     */
     public function orders()
     {
         return $this->hasMany(Order::class);
     }
 
+    /**
+     * Relasi many-to-many ke products melalui wishlists.
+     */
     public function wishlists()
     {
         return $this->belongsToMany(Product::class, 'wishlists')
@@ -67,16 +75,25 @@ class User extends Authenticatable
 
     // ==================== HELPER METHODS ====================
 
+    /**
+     * Cek apakah user adalah admin.
+     */
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
     }
 
+    /**
+     * Cek apakah user adalah customer.
+     */
     public function isCustomer(): bool
     {
         return $this->role === 'customer';
     }
 
+    /**
+     * Cek apakah produk ada di wishlist user.
+     */
     public function hasInWishlist(Product $product): bool
     {
         return $this->wishlists()
@@ -85,22 +102,25 @@ class User extends Authenticatable
     }
 
     /**
-     * Aksesor untuk mendapatkan URL Avatar yang valid.
+     * Aksesor untuk mendapatkan URL Avatar yang valid (Anti-Cache).
      */
     public function getAvatarUrlAttribute(): string
     {
         $avatarPath = trim($this->avatar ?? '');
 
-        // 1. Jika avatar adalah URL eksternal lengkap (misal: Login Google)
+        // 1. Jika URL eksternal (Google/Socialite)
         if (filter_var($avatarPath, FILTER_VALIDATE_URL)) {
             return $avatarPath;
         }
 
-        // 2. Jika avatar adalah path file lokal
+        // 2. Jika ada path lokal (LANGSUNG TAMPILKAN)
         if ($avatarPath) {
-            if (Storage::disk('public')->exists($avatarPath)) {
-                return Storage::disk('public')->url($avatarPath);
-            }
+            // Kita bersihkan path agar tidak double
+            $cleanPath = ltrim(str_replace(['storage/', 'public/'], '', $avatarPath), '/');
+            
+            // Kita tidak pakai 'exists' karena sering gagal deteksi di Windows/Local
+            // Jika path ada di database, kita paksa browser memanggilnya
+            return asset('storage/' . $cleanPath) . '?v=' . time();
         }
 
         // 3. Fallback: UI Avatars
@@ -108,7 +128,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Mendapatkan inisial nama (maksimal 2 karakter).
+     * Get initials from name for avatar fallback.
      */
     public function getInitialsAttribute(): string
     {

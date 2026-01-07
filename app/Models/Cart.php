@@ -10,7 +10,6 @@ class Cart extends Model
         'session_id',
     ];
 
-    // Otomatis load items beserta product
     protected $with = ['items.product'];
 
     // ==================== RELATIONSHIPS ====================
@@ -30,8 +29,7 @@ class Cart extends Model
     public function getSubtotalAttribute()
     {
         return $this->items->sum(function ($item) {
-            // pastikan total_price tidak null
-            return $item->total_price ?? ($item->product->price * $item->quantity);
+            return $item->total_price;
         });
     }
 
@@ -41,8 +39,7 @@ class Cart extends Model
     public function getTotalWeightAttribute()
     {
         return $this->items->sum(function ($item) {
-            // pastikan total_weight tidak null
-            return $item->total_weight ?? ($item->product->weight * $item->quantity);
+            return $item->total_weight;
         });
     }
 }

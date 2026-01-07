@@ -7,7 +7,7 @@
             <div class="col-12">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-2">
-                        <li class="breadcrumb-item"><a href="#" class="text-decoration-none text-muted">Keranjang</a></li>
+                        <li class="breadcrumb-item"><a href="<?php echo e(route('cart.index')); ?>" class="text-decoration-none text-muted">Keranjang</a></li>
                         <li class="breadcrumb-item active fw-bold text-primary" aria-current="page">Checkout</li>
                     </ol>
                 </nav>
@@ -50,7 +50,7 @@
                             </div>
                         </div>
                     </div>
-                    </div>
+                </div>
 
                 <div class="col-lg-4">
                     <div class="card border-0 shadow-lg rounded-4 sticky-top" style="top: 2rem; z-index: 10;">
@@ -58,30 +58,38 @@
                             <h5 class="fw-bold mb-4 text-dark">Ringkasan Pesanan</h5>
                             
                             <div class="order-items-list mb-4">
+                                <?php $calculatedTotal = 0; ?>
                                 <?php $__currentLoopData = $cart->items; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                <div class="d-flex align-items-center mb-3">
-                                    <div class="product-img-mini rounded-3 me-3">
-                                        
-                                        <span class="qty-badge"><?php echo e($item->quantity); ?></span>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-0 small fw-bold text-dark text-truncate" style="max-width: 150px;">
-                                            <?php echo e($item->product->name); ?>
+                                    <?php 
+                                        // Hitung subtotal per item secara manual untuk memastikan tidak 0
+                                        $itemSubtotal = $item->product->price * $item->quantity; 
+                                        $calculatedTotal += $itemSubtotal;
+                                    ?>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <div class="product-img-mini rounded-3 me-3">
+                                            <?php if($item->product->image): ?>
+                                                <img src="<?php echo e(asset('storage/' . $item->product->image)); ?>" alt="" class="img-fluid rounded-3">
+                                            <?php endif; ?>
+                                            <span class="qty-badge"><?php echo e($item->quantity); ?></span>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-0 small fw-bold text-dark text-truncate" style="max-width: 150px;">
+                                                <?php echo e($item->product->name); ?>
 
-                                        </h6>
-                                        <small class="text-muted">Rp <?php echo e(number_format($item->product->price, 0, ',', '.')); ?></small>
+                                            </h6>
+                                            <small class="text-muted">Rp <?php echo e(number_format($item->product->price, 0, ',', '.')); ?></small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="small fw-bold">Rp <?php echo e(number_format($itemSubtotal, 0, ',', '.')); ?></span>
+                                        </div>
                                     </div>
-                                    <div class="text-end">
-                                        <span class="small fw-bold">Rp <?php echo e(number_format($item->subtotal, 0, ',', '.')); ?></span>
-                                    </div>
-                                </div>
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </div>
 
                             <div class="price-breakdown border-top pt-3">
                                 <div class="d-flex justify-content-between mb-2">
                                     <span class="text-muted">Subtotal</span>
-                                    <span class="text-dark">Rp <?php echo e(number_format($cart->items->sum('subtotal'), 0, ',', '.')); ?></span>
+                                    <span class="text-dark fw-bold">Rp <?php echo e(number_format($calculatedTotal, 0, ',', '.')); ?></span>
                                 </div>
                                 <div class="d-flex justify-content-between mb-2">
                                     <span class="text-muted">Biaya Pengiriman</span>
@@ -90,7 +98,7 @@
                                 <hr class="dashed my-3">
                                 <div class="d-flex justify-content-between align-items-center mb-4">
                                     <span class="h5 mb-0 fw-bold">Total Tagihan</span>
-                                    <span class="h4 mb-0 fw-extrabold text-primary">Rp <?php echo e(number_format($cart->items->sum('subtotal'), 0, ',', '.')); ?></span>
+                                    <span class="h4 mb-0 fw-extrabold text-primary">Rp <?php echo e(number_format($calculatedTotal, 0, ',', '.')); ?></span>
                                 </div>
                             </div>
 
@@ -110,15 +118,8 @@
 </div>
 
 <style>
-    /* Global Background */
-    body {
-        background-color: #f8fbff;
-    }
-
-    /* Typography */
+    body { background-color: #f8fbff; }
     .fw-extrabold { font-weight: 800; }
-
-    /* Custom Input Styling */
     .custom-input {
         padding: 0.75rem 1rem;
         border: 1.5px solid #eef2f7;
@@ -131,66 +132,27 @@
         box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1);
         background-color: #fff;
     }
-
-    /* Icon Shape */
     .icon-shape {
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        width: 40px; height: 40px;
+        display: flex; align-items: center; justify-content: center;
     }
-    .bg-primary-light {
-        background-color: rgba(13, 110, 253, 0.1);
-    }
-
-    /* Product Image Mini Placeholder */
+    .bg-primary-light { background-color: rgba(13, 110, 253, 0.1); }
     .product-img-mini {
-        width: 48px;
-        height: 48px;
+        width: 48px; height: 48px;
         background-color: #f0f3f6;
         position: relative;
         border: 1px solid #eee;
     }
+    .product-img-mini img { width: 100%; height: 100%; object-fit: cover; }
     .qty-badge {
-        position: absolute;
-        top: -8px;
-        right: -8px;
-        background-color: #6c757d;
-        color: white;
-        font-size: 10px;
-        padding: 2px 6px;
-        border-radius: 50%;
-        font-weight: bold;
+        position: absolute; top: -8px; right: -8px;
+        background-color: #1e293b; color: white;
+        font-size: 10px; padding: 2px 6px;
+        border-radius: 50%; font-weight: bold;
     }
-
-    /* Shadow Primary */
-    .shadow-primary {
-        box-shadow: 0 10px 20px rgba(13, 110, 253, 0.2);
-    }
-
-    /* Dashed HR */
-    hr.dashed {
-        border-top: 2px dashed #eef2f7;
-        background: none;
-    }
-
-    /* Sticky Top Offset */
-    .sticky-top {
-        transition: top 0.3s ease;
-    }
-
-    /* Border Radius Custom */
+    .shadow-primary { box-shadow: 0 10px 20px rgba(13, 110, 253, 0.2); }
+    hr.dashed { border-top: 2px dashed #eef2f7; background: none; }
     .rounded-4 { border-radius: 1rem !important; }
-
-    /* Animation */
-    .card {
-        transition: transform 0.3s ease;
-    }
-    .card:hover {
-        transform: translateY(-2px);
-    }
 </style>
 <?php $__env->stopSection(); ?>
-
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\gadget-murah\resources\views/checkout/index.blade.php ENDPATH**/ ?>

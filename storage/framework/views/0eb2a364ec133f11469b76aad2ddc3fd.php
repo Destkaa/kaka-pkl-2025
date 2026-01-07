@@ -17,7 +17,7 @@
         
         <?php if(auth()->guard()->check()): ?>
         <button type="button" onclick="toggleWishlist(<?php echo e($product->id); ?>)"
-            class="btn-wishlist shadow-sm position-absolute top-0 end-0 m-3">
+   class="btn-wishlist shadow-sm position-absolute top-0 end-0 m-3">
             <i class="bi <?php echo e(auth()->user()->hasInWishlist($product) ? 'bi-heart-fill text-danger' : 'bi-heart'); ?>"></i>
         </button>
         <?php endif; ?>

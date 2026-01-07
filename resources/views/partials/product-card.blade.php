@@ -19,7 +19,7 @@
         {{-- Wishlist Button --}}
         @auth
         <button type="button" onclick="toggleWishlist({{ $product->id }})"
-            class="btn-wishlist shadow-sm position-absolute top-0 end-0 m-3">
+   class="btn-wishlist shadow-sm position-absolute top-0 end-0 m-3">
             <i class="bi {{ auth()->user()->hasInWishlist($product) ? 'bi-heart-fill text-danger' : 'bi-heart' }}"></i>
         </button>
         @endauth

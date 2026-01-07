@@ -1,6 +1,6 @@
 {{-- ================================================
 FILE: resources/views/cart/index.blade.php
-FUNGSI: Halaman keranjang belanja Modern (Soft UI) - Icon Fix & Anti-Gepeng
+FUNGSI: Halaman keranjang belanja Modern (Soft UI) - FIXED Calculation
 ================================================ --}}
 
 @extends('layouts.app')
@@ -21,7 +21,7 @@ FUNGSI: Halaman keranjang belanja Modern (Soft UI) - Icon Fix & Anti-Gepeng
         display: flex;
         align-items: center;
         justify-content: center;
-        flex-shrink: 0; /* Mencegah gambar menyusut */
+        flex-shrink: 0; 
     }
 
     .cart-img-container img {
@@ -36,16 +36,15 @@ FUNGSI: Halaman keranjang belanja Modern (Soft UI) - Icon Fix & Anti-Gepeng
         border: none;
     }
 
-    /* FIX ICON GEPENG: Pastikan width & height sama dan gunakan flex-shrink-0 */
     .header-icon-box {
         width: 64px;
         height: 64px;
-        min-width: 64px; /* Kunci agar tetap bulat */
-        min-height: 64px; /* Kunci agar tetap bulat */
+        min-width: 64px;
+        min-height: 64px;
         display: flex;
         align-items: center;
         justify-content: center;
-        flex-shrink: 0; /* Mencegah gepeng saat text di sampingnya panjang */
+        flex-shrink: 0;
         border-radius: 50%;
     }
 
@@ -93,7 +92,6 @@ FUNGSI: Halaman keranjang belanja Modern (Soft UI) - Icon Fix & Anti-Gepeng
 <div class="container py-5">
     {{-- Header Halaman --}}
     <div class="d-flex align-items-center mb-5">
-        {{-- FIX: Menggunakan class header-icon-box yang sudah diperbaiki --}}
         <div class="header-icon-box bg-primary bg-opacity-10 text-primary shadow-sm me-3">
             <i class="bi bi-cart3 fs-3"></i>
         </div>
@@ -119,7 +117,14 @@ FUNGSI: Halaman keranjang belanja Modern (Soft UI) - Icon Fix & Anti-Gepeng
                                 </tr>
                             </thead>
                             <tbody>
+                                @php $grandTotal = 0; @endphp
                                 @foreach($cart->items as $item)
+                                @php 
+                                    // Logic Anti-Zero: Hitung manual di Blade
+                                    $price = $item->product->price ?? 0;
+                                    $itemSubtotal = $price * $item->quantity;
+                                    $grandTotal += $itemSubtotal;
+                                @endphp
                                 <tr>
                                     <td class="ps-4 py-4">
                                         <div class="d-flex align-items-center">
@@ -137,11 +142,10 @@ FUNGSI: Halaman keranjang belanja Modern (Soft UI) - Icon Fix & Anti-Gepeng
                                                         <span class="badge bg-primary-subtle text-primary fw-normal small">
                                                             {{ $item->product->category?->name ?? 'Uncategorized' }}
                                                         </span>
-                                                        <span class="text-muted small">@ Rp {{ number_format($item->product->price, 0, ',', '.') }}</span>
+                                                        <span class="text-muted small">@ Rp {{ number_format($price, 0, ',', '.') }}</span>
                                                     </div>
                                                 @else
                                                     <span class="text-danger fw-bold">Produk Tidak Tersedia</span>
-                                                    <p class="text-muted small mb-0">Silakan hapus item ini</p>
                                                 @endif
                                             </div>
                                         </div>
@@ -157,7 +161,7 @@ FUNGSI: Halaman keranjang belanja Modern (Soft UI) - Icon Fix & Anti-Gepeng
                                                     <i class="bi bi-dash"></i>
                                                 </button>
                                                 <input type="number" name="quantity" id="qty-{{ $item->id }}" 
-                                                       value="{{ $item->quantity }}" min="1" max="{{ $item->product->stock ?? 1 }}"
+                                                       value="{{ $item->quantity }}" min="1" max="{{ $item->product->stock ?? 999 }}"
                                                        class="qty-input" readonly>
                                                 <button type="button" class="qty-btn" onclick="updateQty({{ $item->id }}, 1)">
                                                     <i class="bi bi-plus"></i>
@@ -168,7 +172,7 @@ FUNGSI: Halaman keranjang belanja Modern (Soft UI) - Icon Fix & Anti-Gepeng
                                     </td>
 
                                     <td class="text-end fw-bold text-dark">
-                                        Rp {{ number_format($item->subtotal ?? (($item->product->price ?? 0) * $item->quantity), 0, ',', '.') }}
+                                        Rp {{ number_format($itemSubtotal, 0, ',', '.') }}
                                     </td>
 
                                     <td class="text-center pe-4">
@@ -210,7 +214,7 @@ FUNGSI: Halaman keranjang belanja Modern (Soft UI) - Icon Fix & Anti-Gepeng
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <span class="h6 mb-0 fw-bold">Total Tagihan</span>
                         <span class="h4 mb-0 fw-bold text-primary">
-                            Rp {{ number_format($cart->items->sum(fn($item) => $item->subtotal ?? (($item->product->price ?? 0) * $item->quantity)), 0, ',', '.') }}
+                            Rp {{ number_format($grandTotal, 0, ',', '.') }}
                         </span>
                     </div>
 
@@ -222,12 +226,13 @@ FUNGSI: Halaman keranjang belanja Modern (Soft UI) - Icon Fix & Anti-Gepeng
         </div>
     </div>
     @else
-    <div class="card shadow-sm border-0 py-5">
-        <div class="card-body text-center py-5">
-            <div class="header-icon-box bg-light d-inline-flex mb-4">
+    <div class="card shadow-sm border-0 py-5 text-center">
+        <div class="card-body py-5">
+            <div class="header-icon-box bg-light d-inline-flex mb-4 mx-auto">
                 <i class="bi bi-cart-x display-1 text-muted"></i>
             </div>
             <h3 class="fw-bold">Wah, keranjangmu masih kosong!</h3>
+            <p class="text-muted mb-4">Ayo mulai belanja dan temukan produk impianmu.</p>
             <a href="{{ route('catalog.index') }}" class="btn btn-primary btn-lg px-5 rounded-pill shadow">
                 <i class="bi bi-search me-2"></i>Jelajahi Katalog
             </a>
@@ -245,7 +250,7 @@ FUNGSI: Halaman keranjang belanja Modern (Soft UI) - Icon Fix & Anti-Gepeng
         if(!input || !form) return;
 
         let currentVal = parseInt(input.value);
-        let maxVal = parseInt(input.max);
+        let maxVal = parseInt(input.max) || 999;
         let newVal = currentVal + change;
 
         if (newVal >= 1 && newVal <= maxVal) {

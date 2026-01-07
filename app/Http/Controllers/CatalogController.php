@@ -1,37 +1,51 @@
 <?php
+// ================================================
+// FILE: app/Http/Controllers/CatalogController.php
+// FUNGSI: Menangani halaman katalog dan detail produk
+// ================================================
 
 namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache; // Wajib untuk Tugas 2
 
 class CatalogController extends Controller
 {
     /**
-     * Menampilkan halaman katalog produk dengan Cache & Eager Loading.
+     * Menampilkan halaman katalog produk.
+     * Mendukung filter: kategori, harga, pencarian, sorting.
      */
     public function index(Request $request)
     {
-        // --- TUGAS 1: EAGER LOADING (Optimasi N+1) ---
-        // Kita me-load 'category' dan 'primaryImage' sekaligus agar query lebih hemat.
+        // ================================================
+        // 1. BASE QUERY
+        // Mulai dengan produk aktif dan ada stok
+        // ================================================
         $query = Product::query()
-            ->with(['category', 'primaryImage']) 
+            ->with(['category', 'primaryImage']) // Eager load relasi
             ->active()
             ->inStock();
 
-        // Filter Pencarian
+        // ================================================
+        // 2. FILTER: PENCARIAN
+        // Cari di nama dan deskripsi produk
+        // ================================================
         if ($request->filled('q')) {
-            $query->search($request->q);
+            $query->search($request->q); // Scope search di Model
         }
 
-        // Filter Kategori
+        // ================================================
+        // 3. FILTER: KATEGORI
+        // Gunakan slug kategori, bukan ID
+        // ================================================
         if ($request->filled('category')) {
-            $query->byCategory($request->category);
+            $query->byCategory($request->category); // Scope di Model
         }
 
-        // Filter Harga
+        // ================================================
+        // 4. FILTER: RENTANG HARGA
+        // ================================================
         if ($request->filled('min_price')) {
             $query->where('price', '>=', $request->min_price);
         }
@@ -39,50 +53,72 @@ class CatalogController extends Controller
             $query->where('price', '<=', $request->max_price);
         }
 
-        // Sorting
+        // ================================================
+        // 5. FILTER: DISKON
+        // Hanya produk yang sedang diskon
+        // ================================================
+        if ($request->boolean('on_sale')) {
+            $query->onSale(); // Scope: discount_price < price
+        }
+
+        // ================================================
+        // 6. SORTING
+        // Default: terbaru (newest)
+        // ================================================
         $sort = $request->get('sort', 'newest');
+
         match ($sort) {
             'price_asc'  => $query->orderBy('price', 'asc'),
             'price_desc' => $query->orderBy('price', 'desc'),
             'name_asc'   => $query->orderBy('name', 'asc'),
             'name_desc'  => $query->orderBy('name', 'desc'),
-            default      => $query->latest(),
+            default      => $query->latest(), // newest
         };
 
-        // Pagination (Dinamis, tidak di-cache)
+        // ================================================
+        // 7. PAGINATION
+        // withQueryString() menjaga parameter filter di URL pagination
+        // ================================================
         $products = $query->paginate(12)->withQueryString();
 
-        // --- TUGAS 2: IMPLEMENTASI CACHE (Sidebar) ---
-        // Menyimpan data kategori di Cache selama 24 jam untuk mengurangi beban DB.
-        $categories = Cache::remember('catalog_categories', now()->addDay(), function () {
-            return Category::query()
-                ->active()
-                ->withCount(['activeProducts'])
-                ->having('active_products_count', '>', 0)
-                ->orderBy('name')
-                ->get();
-        });
+        // ================================================
+        // 8. DATA SIDEBAR
+        // Kategori untuk filter
+        // ================================================
+        $categories = Category::query()
+            ->active()
+            ->withCount(['activeProducts'])
+            ->having('active_products_count', '>', 0)
+            ->orderBy('name')
+            ->get();
 
         return view('catalog.index', compact('products', 'categories'));
     }
 
     /**
      * Menampilkan halaman detail produk.
+     * Menggunakan Route Model Binding dengan slug.
      */
     public function show(string $slug)
     {
-        // Eager Loading relasi images untuk galeri
+        // ================================================
+        // CARI PRODUK BERDASARKAN SLUG
+        // Load semua relasi yang dibutuhkan
+        // ================================================
         $product = Product::query()
-            ->with(['category', 'images']) 
+            ->with(['category', 'images']) // Load semua gambar
             ->where('slug', $slug)
             ->where('is_active', true)
-            ->firstOrFail();
+            ->firstOrFail(); // 404 jika tidak ditemukan
 
-        // Produk Terkait dengan Eager Loading
+        // ================================================
+        // PRODUK TERKAIT (RELATED)
+        // Produk lain di kategori yang sama
+        // ================================================
         $relatedProducts = Product::query()
             ->with(['category', 'primaryImage'])
             ->where('category_id', $product->category_id)
-            ->where('id', '!=', $product->id)
+            ->where('id', '!=', $product->id) // Kecuali produk ini
             ->active()
             ->inStock()
             ->take(4)

@@ -1,62 +1,86 @@
 
 
-
-
 <?php $__env->startSection('title', 'Manajemen Kategori'); ?>
 
 <?php $__env->startPush('styles'); ?>
 <style>
-    /* ===== UI CONSISTENCY ===== */
-    .bi::before { display: inline-block; vertical-align: middle; }
-    
-    .category-img-container {
-        width: 48px;
-        height: 48px;
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: #f8f9fa;
-        border: 1px solid #eee;
-    }
-
-    /* Badge Status */
-    .badge-status {
-        display: inline-block;
-        padding: 0.4em 1em;
-        font-size: 0.75rem;
-        font-weight: 700;
-        border-radius: 50rem;
-    }
-    .status-success { background-color: rgba(25, 135, 84, 0.12); color: #198754; }
-    .status-secondary { background-color: rgba(108, 117, 125, 0.12); color: #6c757d; }
-    .status-info { background-color: rgba(13, 202, 240, 0.12); color: #087990; }
-
-    /* Preview Image Box */
-    .img-preview-box {
-        width: 100%;
-        max-height: 200px;
+    /* ===== MODERN SOFT UI ===== */
+    .card {
         border-radius: 12px;
         overflow: hidden;
-        display: none; /* Sembunyi jika tidak ada gambar */
-        border: 2px dashed #ddd;
-        margin-top: 10px;
-        text-align: center;
     }
-    .img-preview-box img {
-        max-width: 100%;
-        height: auto;
+    
+    /* Header styling yang elegan */
+    .card-header-elegant {
+        background-color: #ffffff;
+        border-bottom: 1px solid #f0f0f0;
+        padding: 1.25rem 1.5rem;
+    }
+
+    /* Table styling */
+    .table thead th {
+        background-color: #f8f9fa;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+        color: #6c757d;
+        border-top: none;
+        padding: 1rem 0.75rem;
+    }
+    
+    .table tbody tr:hover {
+        background-color: #fcfcfc;
+    }
+
+    /* Soft Badges */
+    .badge-soft-info {
+        background-color: #e5f6fd;
+        color: #03a9f4;
+        border: none;
+    }
+    .badge-soft-success {
+        background-color: #e6fcf5;
+        color: #08d192;
+        border: none;
+    }
+    .badge-soft-secondary {
+        background-color: #f1f3f5;
+        color: #495057;
+        border: none;
     }
 
     /* Modal Styling */
-    .modal-content { border: none; border-radius: 1.25rem; overflow: hidden; }
-    .btn-icon {
-        width: 32px; height: 32px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
-        transition: all 0.2s;
+    .modal-content {
+        border: none;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    .modal-header {
+        border-bottom: 1px solid #f0f0f0;
+        padding: 1.5rem;
+    }
+    .modal-footer {
+        border-top: 1px solid #f0f0f0;
+        background-color: #f8f9fa;
+        padding: 1rem 1.5rem;
+    }
+
+    /* Form control refinement */
+    .form-control, .form-check-input {
+        border-radius: 8px;
+        padding: 0.6rem 1rem;
+        border: 1px solid #dee2e6;
+    }
+    .form-control:focus {
+        box-shadow: 0 0 0 3px rgba(78, 115, 223, 0.1);
+    }
+
+    .category-img-wrapper {
+        width: 48px;
+        height: 48px;
+        object-fit: cover;
+        border-radius: 10px;
     }
 </style>
 <?php $__env->stopPush(); ?>
@@ -67,23 +91,23 @@
 
         
         <?php if(session('success')): ?>
-        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-3">
-            <i class="bi bi-check-circle-fill me-2"></i> <?php echo e(session('success')); ?>
-
+        <div class="alert alert-success border-0 shadow-sm alert-dismissible fade show mb-4">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+                <div><?php echo e(session('success')); ?></div>
+            </div>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
         <?php endif; ?>
 
-        <div class="card shadow-sm border-0 rounded-4 mb-4 overflow-hidden">
+        <div class="card shadow-sm border-0 mb-4">
             
-            <div class="card-header bg-white py-3 px-4 d-flex justify-content-between align-items-center border-0">
+            <div class="card-header-elegant d-flex justify-content-between align-items-center">
                 <div>
-                    <h5 class="mb-0 fw-bold text-dark">
-                        <i class="bi bi-tags text-primary me-2"></i> Manajemen Kategori
-                    </h5>
-                    <p class="text-muted small mb-0">Atur pengelompokan produk toko Anda</p>
+                    <h5 class="mb-0 fw-bold text-dark">Daftar Kategori</h5>
+                    <p class="text-muted small mb-0">Kelola dan organisir kategori produk Anda</p>
                 </div>
-                <button class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#createModal">
+                <button class="btn btn-primary btn-sm px-3 py-2 fw-semibold rounded-3" data-bs-toggle="modal" data-bs-target="#createModal">
                     <i class="bi bi-plus-lg me-1"></i> Tambah Kategori
                 </button>
             </div>
@@ -91,13 +115,13 @@
             
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light text-muted small text-uppercase tracking-wider">
+                    <table class="table align-middle mb-0">
+                        <thead>
                             <tr>
-                                <th class="ps-4 py-3 border-0">Informasi Kategori</th>
-                                <th class="text-center py-3 border-0">Produk Terkait</th>
-                                <th class="text-center py-3 border-0">Status</th>
-                                <th class="text-end pe-4 py-3 border-0">Aksi</th>
+                                <th class="ps-4">Kategori</th>
+                                <th class="text-center">Total Produk</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-end pe-4">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -105,43 +129,50 @@
                             <tr>
                                 <td class="ps-4">
                                     <div class="d-flex align-items-center">
-                                        <div class="category-img-container rounded-3 overflow-hidden me-3">
-                                            <?php if($category->image): ?>
-                                                <img src="<?php echo e(Storage::url($category->image)); ?>" class="img-fluid object-fit-cover" style="width:100%; height:100%;">
-                                            <?php else: ?>
-                                                <i class="bi bi-image text-muted fs-4"></i>
-                                            <?php endif; ?>
-                                        </div>
+                                        <?php if($category->image): ?>
+                                            <img src="<?php echo e(Storage::url($category->image)); ?>" class="category-img-wrapper me-3 border shadow-sm">
+                                        <?php else: ?>
+                                            <div class="category-img-wrapper bg-light d-flex align-items-center justify-content-center me-3 border">
+                                                <i class="bi bi-image text-muted fs-5"></i>
+                                            </div>
+                                        <?php endif; ?>
                                         <div>
                                             <div class="fw-bold text-dark"><?php echo e($category->name); ?></div>
-                                            <small class="text-muted x-small">Slug: <?php echo e($category->slug); ?></small>
+                                            <div class="text-muted small">/<?php echo e($category->slug); ?></div>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="text-center">
-                                    <span class="badge-status status-info">
-                                        <?php echo e($category->products_count); ?> Item
-                                    </span>
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge-status <?php echo e($category->is_active ? 'status-success' : 'status-secondary'); ?>">
-                                        <?php echo e($category->is_active ? 'Aktif' : 'Nonaktif'); ?>
 
+                                <td class="text-center">
+                                    <span class="badge badge-soft-info px-3 py-2 rounded-pill fw-semibold">
+                                        <?php echo e($category->products_count); ?> Produk
                                     </span>
                                 </td>
+
+                                <td class="text-center">
+                                    <?php if($category->is_active): ?>
+                                        <span class="badge badge-soft-success px-3 py-2 rounded-pill">
+                                            <i class="bi bi-circle-fill me-1" style="font-size: 6px; vertical-align: middle;"></i> Aktif
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="badge badge-soft-secondary px-3 py-2 rounded-pill">
+                                            <i class="bi bi-circle-fill me-1" style="font-size: 6px; vertical-align: middle;"></i> Nonaktif
+                                        </span>
+                                    <?php endif; ?>
+                                </td>
+
                                 <td class="text-end pe-4">
                                     <div class="d-flex justify-content-end gap-2">
-                                        <button class="btn btn-icon btn-light rounded-circle edit-btn" 
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#editModal<?php echo e($category->id); ?>">
-                                            <i class="bi bi-pencil-square text-warning"></i>
+                                        <button class="btn btn-sm btn-light border" data-bs-toggle="modal"
+                                            data-bs-target="#editModal<?php echo e($category->id); ?>" title="Edit">
+                                            <i class="bi bi-pencil text-primary"></i>
                                         </button>
 
                                         <form action="<?php echo e(route('admin.categories.destroy', $category)); ?>" method="POST"
-                                              onsubmit="return confirm('Hapus kategori ini?')">
+                                            onsubmit="return confirm('Yakin hapus kategori ini?')">
                                             <?php echo csrf_field(); ?>
                                             <?php echo method_field('DELETE'); ?>
-                                            <button type="submit" class="btn btn-icon btn-light rounded-circle">
+                                            <button type="submit" class="btn btn-sm btn-light border" title="Hapus">
                                                 <i class="bi bi-trash text-danger"></i>
                                             </button>
                                         </form>
@@ -150,7 +181,10 @@
                             </tr>
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                             <tr>
-                                <td colspan="4" class="text-center py-5 text-muted">Belum ada kategori.</td>
+                                <td colspan="4" class="text-center py-5">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/7486/7486744.png" width="60" class="opacity-25 mb-3">
+                                    <p class="text-muted mb-0">Belum ada kategori tersedia.</p>
+                                </td>
                             </tr>
                             <?php endif; ?>
                         </tbody>
@@ -158,47 +192,11 @@
                 </div>
             </div>
 
-            <?php if($categories->hasPages()): ?>
-            <div class="card-footer bg-white border-0 py-3">
+            <div class="card-footer bg-white border-top-0 py-3">
                 <?php echo e($categories->links()); ?>
 
             </div>
-            <?php endif; ?>
         </div>
-    </div>
-</div>
-
-
-<div class="modal fade" id="createModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <form class="modal-content shadow-lg" action="<?php echo e(route('admin.categories.store')); ?>" method="POST" enctype="multipart/form-data">
-            <?php echo csrf_field(); ?>
-            <div class="modal-header border-0 pt-4 px-4">
-                <h5 class="fw-bold mb-0">Buat Kategori Baru</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-4">
-                <div class="mb-3">
-                    <label class="form-label fw-bold small text-muted text-uppercase">Nama Kategori</label>
-                    <input type="text" name="name" class="form-control py-2 shadow-none" placeholder="Elektronik, Pakaian, dll." required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold small text-muted text-uppercase">Gambar</label>
-                    <input type="file" name="image" class="form-control shadow-none file-input-preview" data-preview="preview-create">
-                    <div id="preview-create" class="img-preview-box">
-                        <img src="" alt="Preview">
-                    </div>
-                </div>
-                <div class="form-check form-switch mt-4">
-                    <input class="form-check-input" type="checkbox" name="is_active" value="1" checked id="createActive">
-                    <label class="form-check-label fw-medium" for="createActive">Aktifkan Kategori</label>
-                </div>
-            </div>
-            <div class="modal-footer border-0 pb-4 px-4">
-                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm">Simpan</button>
-            </div>
-        </form>
     </div>
 </div>
 
@@ -206,66 +204,76 @@
 <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
 <div class="modal fade" id="editModal<?php echo e($category->id); ?>" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <form class="modal-content shadow-lg" action="<?php echo e(route('admin.categories.update', $category)); ?>" method="POST" enctype="multipart/form-data">
-            <?php echo csrf_field(); ?> <?php echo method_field('PUT'); ?>
-            <div class="modal-header border-0 pt-4 px-4">
-                <h5 class="fw-bold mb-0">Edit Kategori</h5>
+        <form class="modal-content" action="<?php echo e(route('admin.categories.update', $category)); ?>" method="POST" enctype="multipart/form-data">
+            <?php echo csrf_field(); ?>
+            <?php echo method_field('PUT'); ?>
+
+            <div class="modal-header bg-white">
+                <h5 class="modal-title fw-bold text-dark">Edit Kategori</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body p-4">
+
+            <div class="modal-body">
                 <div class="mb-3">
-                    <label class="form-label fw-bold small text-muted text-uppercase">Nama Kategori</label>
-                    <input type="text" name="name" class="form-control py-2 shadow-none" value="<?php echo e($category->name); ?>" required>
+                    <label class="form-label small fw-bold text-uppercase text-muted">Nama Kategori</label>
+                    <input type="text" name="name" class="form-control" value="<?php echo e($category->name); ?>" required>
                 </div>
+
                 <div class="mb-3">
-                    <label class="form-label fw-bold small text-muted text-uppercase">Ganti Gambar</label>
-                    <input type="file" name="image" class="form-control shadow-none file-input-preview" data-preview="preview-edit-<?php echo e($category->id); ?>">
-                    
-                    
-                    <div id="preview-edit-<?php echo e($category->id); ?>" class="img-preview-box mt-2" style="<?php echo e($category->image ? 'display:block;' : ''); ?>">
-                        <img src="<?php echo e($category->image ? Storage::url($category->image) : ''); ?>" alt="Preview">
-                    </div>
+                    <label class="form-label small fw-bold text-uppercase text-muted">Gambar Kategori</label>
+                    <input type="file" name="image" class="form-control">
+                    <small class="text-muted mt-1 d-block">Biarkan kosong jika tidak ingin mengubah gambar.</small>
                 </div>
-                <div class="form-check form-switch mt-4">
-                    <input class="form-check-input" type="checkbox" name="is_active" value="1" <?php echo e($category->is_active ? 'checked' : ''); ?> id="sw<?php echo e($category->id); ?>">
-                    <label class="form-check-label fw-medium" for="sw<?php echo e($category->id); ?>">Kategori Aktif</label>
+
+                <div class="form-check form-switch p-3 bg-light rounded-3">
+                    <input class="form-check-input ms-0 me-2" type="checkbox" name="is_active" id="editActive<?php echo e($category->id); ?>" value="1" <?php echo e($category->is_active ? 'checked' : ''); ?>>
+                    <label class="form-check-label fw-semibold" for="editActive<?php echo e($category->id); ?>">Kategori Aktif</label>
                 </div>
             </div>
-            <div class="modal-footer border-0 pb-4 px-4">
-                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-primary rounded-pill px-4 shadow-sm">Update</button>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-primary px-4">Simpan Perubahan</button>
             </div>
         </form>
     </div>
 </div>
 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
-<?php $__env->startPush('scripts'); ?>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Fungsi Preview Gambar
-        const fileInputs = document.querySelectorAll('.file-input-preview');
-        
-        fileInputs.forEach(input => {
-            input.addEventListener('change', function() {
-                const previewId = this.getAttribute('data-preview');
-                const previewBox = document.getElementById(previewId);
-                const previewImg = previewBox.querySelector('img');
-                
-                const file = this.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        previewImg.src = e.target.result;
-                        previewBox.style.display = 'block';
-                    }
-                    reader.readAsDataURL(file);
-                }
-            });
-        });
-    });
-</script>
-<?php $__env->stopPush(); ?>
 
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content" action="<?php echo e(route('admin.categories.store')); ?>" method="POST" enctype="multipart/form-data">
+            <?php echo csrf_field(); ?>
+
+            <div class="modal-header bg-white">
+                <h5 class="modal-title fw-bold text-dark">Tambah Kategori Baru</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-uppercase text-muted">Nama Kategori</label>
+                    <input type="text" name="name" class="form-control" placeholder="Contoh: Elektronik, Pakaian, dll" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-uppercase text-muted">Gambar</label>
+                    <input type="file" name="image" class="form-control">
+                </div>
+
+                <div class="form-check form-switch p-3 bg-light rounded-3">
+                    <input class="form-check-input ms-0 me-2" type="checkbox" name="is_active" id="createActive" value="1" checked>
+                    <label class="form-check-label fw-semibold" for="createActive">Langsung Aktifkan Kategori</label>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-primary px-4">Simpan Kategori</button>
+            </div>
+        </form>
+    </div>
+</div>
 <?php $__env->stopSection(); ?>
 <?php echo $__env->make('layouts.admin', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\gadget-murah\resources\views/admin/categories/index.blade.php ENDPATH**/ ?>

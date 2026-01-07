@@ -63,15 +63,28 @@ class DashboardController extends Controller
         // 4. Data Grafik Pendapatan (7 Hari Terakhir)
         // Kasus: Grouping data per tanggal
         // Kita gunakan DB::raw untuk format tanggal dari timestamp 'created_at'
-        $revenueChart = Order::select([
+        $revenueData = Order::select([
                 DB::raw('DATE(created_at) as date'), // Ambil tanggalnya saja (2024-12-10)
                 DB::raw('SUM(total_amount) as total') // Total omset hari itu
             ])
             ->where('payment_status', 'paid')
-            ->where('created_at', '>=', now()->subDays(7)) // Filter 7 hari ke belakang
+            ->where('created_at', '>=', now()->subDays(6)->startOfDay()) // 7 hari termasuk hari ini
             ->groupBy('date') // Kelompokkan baris berdasarkan tanggal
             ->orderBy('date', 'asc') // Urutkan kronologis
-            ->get();
+            ->get()
+            ->keyBy('date'); // Index by date untuk mapping mudah
+
+        // Buat array 7 hari lengkap dengan data 0 jika tidak ada transaksi
+        $revenueChart = collect();
+        for ($i = 6; $i >= 0; $i--) {
+            $date = now()->subDays($i)->format('Y-m-d');
+            $dayData = $revenueData->get($date);
+
+            $revenueChart->push([
+                'date' => now()->subDays($i)->format('d M'),
+                'total' => $dayData ? $dayData->total : 0
+            ]);
+        }
 
         return view('admin.dashboard', compact('stats', 'recentOrders', 'topProducts', 'revenueChart'));
     }

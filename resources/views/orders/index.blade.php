@@ -1,25 +1,118 @@
 @extends('layouts.app')
 
 @section('content')
+<style>
+    /* Background & Container */
+    body {
+        background-color: #f8fafc;
+    }
+
+    /* Card Styling */
+    .order-card {
+        border-radius: 1.25rem;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+        overflow: hidden;
+    }
+
+    /* Table Header */
+    .table thead th {
+        background-color: #f1f5f9;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        font-weight: 700;
+        color: #64748b;
+        padding: 1.25rem 1rem;
+        border: none;
+    }
+
+    /* Table Body */
+    .table tbody tr {
+        transition: all 0.2s ease;
+    }
+
+    .table tbody tr:hover {
+        background-color: #fcfcfc;
+    }
+
+    /* Soft Badges */
+    .badge-soft {
+        padding: 0.5rem 0.85rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        font-size: 0.75rem;
+        display: inline-block;
+    }
+
+    .badge-soft-warning { background-color: #fffbeb; color: #92400e; }
+    .badge-soft-info { background-color: #f0f9ff; color: #075985; }
+    .badge-soft-primary { background-color: #eef2ff; color: #3730a3; }
+    .badge-soft-success { background-color: #f0fdf4; color: #166534; }
+    .badge-soft-danger { background-color: #fef2f2; color: #991b1b; }
+
+    /* Button Action */
+    .btn-detail {
+        border-radius: 0.75rem;
+        padding: 0.4rem 1.2rem;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+        border: 1px solid #e2e8f0;
+        color: #1e293b;
+    }
+
+    .btn-detail:hover {
+        background-color: #1e293b;
+        color: #ffffff;
+        border-color: #1e293b;
+        transform: translateY(-1px);
+    }
+
+    /* Custom Pagination Styling */
+    .pagination {
+        margin-bottom: 0;
+        gap: 6px;
+    }
+
+    .page-item .page-link {
+        border-radius: 0.5rem !important;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+        font-weight: 500;
+        padding: 0.5rem 0.9rem;
+    }
+
+    .page-item.active .page-link {
+        background-color: #1e293b;
+        border-color: #1e293b;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+</style>
+
 <div class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h1 class="h3 mb-1 fw-bold text-dark">Daftar Pesanan Saya</h1>
-            <p class="text-muted small mb-0">Pantau status dan riwayat belanja Anda di sini.</p>
+            <h1 class="h3 fw-bold mb-1 text-dark">Daftar Pesanan Saya</h1>
+            <p class="text-muted small mb-0">Lacak status dan riwayat pembelanjaan Anda</p>
+        </div>
+        <div class="d-none d-md-block">
+             <i class="bi bi- bag-check fs-2 text-primary opacity-25"></i>
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 20px;">
+    <div class="card order-card">
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
-                    <thead class="bg-light text-secondary small text-uppercase">
+                    <thead>
                         <tr>
-                            <th class="ps-4 py-3">No. Order</th>
-                            <th class="py-3">Tanggal</th>
-                            <th class="py-3">Status Pesanan</th>
-                            <th class="py-3">Total Tagihan</th>
-                            <th class="text-end pe-4 py-3">Aksi</th>
+                            <th class="ps-4">No. Order</th>
+                            <th>Tanggal</th>
+                            <th>Status</th>
+                            <th>Total Pembayaran</th>
+                            <th class="text-end pe-4">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -28,64 +121,49 @@
                             <td class="ps-4">
                                 <span class="fw-bold text-dark">#{{ $order->order_number }}</span>
                             </td>
-                            <td class="text-secondary small">
-                                {{ $order->created_at->format('d M Y') }}<br>
-                                <span class="text-muted">{{ $order->created_at->format('H:i') }} WIB</span>
+                            <td>
+                                <div class="text-dark fw-medium">{{ $order->created_at->translatedFormat('d M Y') }}</div>
+                                <div class="text-muted small">{{ $order->created_at->format('H:i') }} WIB</div>
                             </td>
                             <td>
                                 @php
-                                    // Pemetaan warna berdasarkan status database
-                                    $statusClass = [
-                                        'pending'    => 'bg-warning-subtle text-warning-emphasis border-warning',
-                                        'processing' => 'bg-info-subtle text-info-emphasis border-info',
-                                        'shipped'    => 'bg-primary-subtle text-primary-emphasis border-primary',
-                                        'delivered'  => 'bg-secondary-subtle text-secondary-emphasis border-secondary',
-                                        'completed'  => 'bg-success-subtle text-success-emphasis border-success',
-                                        'cancelled'  => 'bg-danger-subtle text-danger-emphasis border-danger'
-                                    ][$order->status] ?? 'bg-secondary-subtle text-secondary-emphasis';
-
-                                    // Pemetaan label bahasa Indonesia
-                                    $statusLabel = [
-                                        'pending'    => 'Menunggu Pembayaran',
-                                        'processing' => 'Sedang Diproses',
-                                        'shipped'    => 'Dalam Pengiriman',
-                                        'delivered'  => 'Tiba di Tujuan',
-                                        'completed'  => 'Pesanan Selesai',
-                                        'cancelled'  => 'Dibatalkan'
-                                    ][$order->status] ?? ucfirst($order->status);
+                                    $statusClasses = [
+                                        'pending'    => 'badge-soft-warning',
+                                        'processing' => 'badge-soft-info',
+                                        'shipped'    => 'badge-soft-primary',
+                                        'delivered'  => 'badge-soft-success',
+                                        'cancelled'  => 'badge-soft-danger',
+                                    ];
+                                    $statusLabels = [
+                                        'pending'    => 'Menunggu',
+                                        'processing' => 'Diproses',
+                                        'shipped'    => 'Dikirim',
+                                        'delivered'  => 'Selesai',
+                                        'cancelled'  => 'Batal',
+                                    ];
+                                    $class = $statusClasses[$order->status] ?? 'bg-secondary text-white';
+                                    $label = $statusLabels[$order->status] ?? ucfirst($order->status);
                                 @endphp
-                                <span class="badge border px-3 py-2 fw-semibold {{ $statusClass }}" style="font-size: 0.75rem; border-radius: 8px;">
-                                    {{ $statusLabel }}
+                                <span class="badge-soft {{ $class }}">
+                                    {{ $label }}
                                 </span>
                             </td>
                             <td>
                                 <span class="fw-bold text-dark">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span>
-                                @if($order->payment_status === 'paid')
-                                    <div class="text-success" style="font-size: 0.7rem;"><i class="bi bi-patch-check-fill"></i> Terbayar</div>
-                                @endif
                             </td>
                             <td class="text-end pe-4">
-                                <div class="d-flex justify-content-end gap-2">
-                                    {{-- Tombol Detail selalu ada --}}
-                                    <a href="{{ route('orders.show', $order) }}" class="btn btn-sm btn-white border shadow-sm px-3 hover-primary rounded-pill">
-                                        <i class="bi bi-eye me-1"></i> Detail
-                                    </a>
-
-                                    {{-- Tombol Bayar Muncul hanya jika status masih pending --}}
-                                    @if($order->status === 'pending' && $order->payment_status === 'unpaid')
-                                        <a href="{{ route('orders.show', $order) }}" class="btn btn-sm btn-primary px-3 rounded-pill shadow-sm">
-                                            <i class="bi bi-wallet2 me-1"></i> Bayar
-                                        </a>
-                                    @endif
-                                </div>
+                                <a href="{{ route('orders.show', $order) }}" class="btn btn-detail">
+                                    <i class="bi bi-eye me-1"></i> Detail
+                                </a>
                             </td>
                         </tr>
                         @empty
                         <tr>
                             <td colspan="5" class="text-center py-5">
-                                <img src="https://cdn-icons-png.flaticon.com/512/4076/4076549.png" width="80" class="mb-3 opacity-25" alt="Empty">
-                                <p class="text-muted mb-0">Belum ada riwayat pesanan.</p>
-                                <a href="{{ route('catalog.index') }}" class="btn btn-sm btn-primary mt-3 rounded-pill px-4">Mulai Belanja</a>
+                                <div class="text-muted">
+                                    <i class="bi bi-cart-x fs-1 opacity-25 d-block mb-3"></i>
+                                    <span>Belum ada pesanan yang ditemukan.</span>
+                                </div>
                             </td>
                         </tr>
                         @endforelse
@@ -93,38 +171,12 @@
                 </table>
             </div>
         </div>
-        
         @if($orders->hasPages())
-        <div class="card-footer bg-white border-top-0 py-3">
-            <div class="d-flex justify-content-center">
-                {{ $orders->links() }}
-            </div>
+        <div class="card-footer bg-white border-0 py-4 d-flex justify-content-center">
+            {{ $orders->links('pagination::bootstrap-5') }}
         </div>
         @endif
     </div>
 </div>
 
-<style>
-    /* Styling interaksi */
-    .table-hover tbody tr:hover {
-        background-color: #fcfdfe;
-        transition: 0.2s;
-    }
-    .hover-primary:hover {
-        background-color: #0d6efd !important;
-        color: white !important;
-        border-color: #0d6efd !important;
-    }
-    .btn-white {
-        background-color: white;
-        color: #475569;
-    }
-    /* Warna Subtitle Bootstrap (Fallback jika CSS tidak ter-load) */
-    .bg-warning-subtle { background-color: #fff3cd !important; }
-    .bg-success-subtle { background-color: #d1e7dd !important; }
-    .bg-danger-subtle { background-color: #f8d7da !important; }
-    .bg-info-subtle { background-color: #cff4fc !important; }
-    .bg-primary-subtle { background-color: #cfe2ff !important; }
-    .bg-secondary-subtle { background-color: #e2e3e5 !important; }
-</style>
 @endsection

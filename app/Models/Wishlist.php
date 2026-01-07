@@ -1,19 +1,27 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
 class Wishlist extends Model
 {
-    // Menentukan nama tabel secara eksplisit
-    protected $table = 'wishlists';
-
     protected $fillable = [
         'user_id',
         'product_id',
     ];
 
-    // Di sini tidak perlu ada function wishlists() atau hasInWishlist()
-    // karena logika tersebut sudah dikelola oleh Model User sebagai pemilik Wishlist.
+    // ==================== RELATIONSHIPS ====================
+
+    public function wishlists()
+    {
+        // Relasi User ke Product melalui tabel wishlists
+        return $this->belongsToMany(Product::class, 'wishlists')
+            ->withTimestamps(); // Agar created_at/updated_at di pivot terisi
+    }
+
+    // Helper untuk cek apakah user sudah wishlist produk tertentu
+    public function hasInWishlist(Product $product)
+    {
+        return $this->wishlists()->where('product_id', $product->id)->exists();
+    }
 }

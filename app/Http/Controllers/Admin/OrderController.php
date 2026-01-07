@@ -1,70 +1,76 @@
 <?php
+// app/Http/Controllers/Admin/OrderController.php
 
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
     /**
-     * Menampilkan daftar semua pesanan
+     * Menampilkan daftar semua pesanan untuk admin.
+     * Dilengkapi filter by status.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $orders = Order::with(['user'])
-            ->latest()
-            ->paginate(15);
+        $orders = Order::query()
+            ->with('user') // N+1 prevention: Load data user pemilik order
+            // Fitur Filter Status (?status=pending)
+            ->when($request->status, function($q, $status) {
+                $q->where('status', $status);
+            })
+            ->latest() // Urutkan terbaru
+            ->paginate(20);
 
         return view('admin.orders.index', compact('orders'));
     }
 
     /**
-     * Menampilkan detail pesanan tunggal (INI YANG TADI HILANG)
+     * Detail order untuk admin.
      */
     public function show(Order $order)
     {
-        $order->load(['user', 'items.product']);
+        // Load item produk dan data user
+        $order->load(['items.product', 'user']);
         return view('admin.orders.show', compact('order'));
     }
 
     /**
-     * Memperbarui status pesanan (PATCH)
+     * Update status pesanan (misal: kirim barang)
+     * Handle otomatis pengembalian stok jika status diubah jadi Cancelled.
      */
     public function updateStatus(Request $request, Order $order)
     {
+        // Validasi status yang dikirim form
         $request->validate([
-            'status' => 'required|in:pending,processing,shipped,completed,cancelled',
+            'status' => 'required|in:processing,shipped,delivered,cancelled'
         ]);
 
-        try {
-            DB::beginTransaction();
+        $oldStatus = $order->status;
+        $newStatus = $request->status === 'completed' ? 'delivered' : $request->status;
 
-            $order->status = $request->status;
-            $order->save();
-
-            // Clear cache jika diperlukan
-            try {
-                Cache::forget('catalog_categories');
-            } catch (\Exception $e) {
-                Log::warning("Cache clear failed: " . $e->getMessage());
+        // ============================================================
+        // LOGIKA RESTOCK (PENTING!)
+        // ============================================================
+        // Jika admin membatalkan pesanan, stok barang harus dikembalikan ke gudang.
+        // Syarat:
+        // 1. Status baru adalah 'cancelled'
+        // 2. Status lama BUKAN 'cancelled' (agar tidak restock 2x kalau tombol ditekan berkali-kali)
+        // ============================================================
+        if ($newStatus === 'cancelled' && $oldStatus !== 'cancelled') {
+            foreach ($order->items as $item) {
+                // increment() adalah operasi atomik (thread-safe) di level database.
+                // SQL-nya kurang lebih: UPDATE products SET stock = stock + X WHERE id = Y
+                // Ini aman dari Race Condition jika ada transaksi bersamaan.
+                $item->product->increment('stock', $item->quantity);
             }
-
-            DB::commit();
-
-            return redirect()->route('admin.orders.show', $order->id)
-                ->with('success', 'Status pesanan berhasil diperbarui!');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error("UPDATE ORDER FAILED: " . $e->getMessage());
-
-            return redirect()->route('admin.orders.show', $order->id)
-                ->with('error', 'Gagal memperbarui status.');
         }
+
+        // Update status di database
+        $order->update(['status' => $newStatus]);
+
+        return back()->with('success', "Status pesanan diperbarui menjadi $newStatus");
     }
 }
