@@ -1,8 +1,3 @@
-{{-- ======================================== 
-FILE: resources/views/admin/products/index.blade.php 
-FUNGSI: Daftar produk dengan desain modern & responsif
-======================================== --}}
-
 @extends('layouts.admin')
 
 @section('title', 'Daftar Produk')
@@ -13,7 +8,7 @@ FUNGSI: Daftar produk dengan desain modern & responsif
         <h2 class="h3 fw-bold text-dark mb-1">Daftar Produk</h2>
         <p class="text-muted small mb-0">Kelola stok, harga, dan informasi produk Anda.</p>
     </div>
-    <a href="{{ route('admin.products.create') }}" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">
+    <a href="{{ route('admin.products.create') }}" class="btn btn-dark rounded-pill px-4 shadow-sm fw-bold">
         <i class="bi bi-plus-lg me-2"></i> Tambah Produk
     </a>
 </div>
@@ -105,7 +100,6 @@ FUNGSI: Daftar produk dengan desain modern & responsif
                             <a href="{{ route('admin.products.edit', $product) }}" class="btn btn-icon btn-light rounded-circle" title="Edit">
                                 <i class="bi bi-pencil-square text-warning"></i>
                             </a>
-                            {{-- Tambahkan form delete jika diperlukan --}}
                         </div>
                     </td>
                 </tr>
@@ -115,7 +109,7 @@ FUNGSI: Daftar produk dengan desain modern & responsif
                         <div class="py-3">
                             <i class="bi bi-box-seam display-4 text-muted mb-3 d-block"></i>
                             <p class="text-muted">Data produk tidak ditemukan.</p>
-                            <a href="{{ route('admin.products.create') }}" class="btn btn-sm btn-primary rounded-pill">Tambah Produk Pertama</a>
+                            <a href="{{ route('admin.products.create') }}" class="btn btn-sm btn-dark rounded-pill px-3">Tambah Produk Pertama</a>
                         </div>
                     </td>
                 </tr>
@@ -123,10 +117,22 @@ FUNGSI: Daftar produk dengan desain modern & responsif
             </tbody>
         </table>
     </div>
-</div>
 
-<div class="mt-4 d-flex justify-content-center">
-    {{ $products->links('pagination::bootstrap-5') }}
+    {{-- FOOTER DENGAN PAGINATION CUSTOM --}}
+    <div class="card-footer bg-white py-4 px-4 border-0">
+        <div class="row align-items-center">
+            <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                <small class="text-muted fw-medium">
+                    Menampilkan <span class="text-dark">{{ $products->firstItem() ?? 0 }}</span> sampai <span class="text-dark">{{ $products->lastItem() ?? 0 }}</span> dari <span class="text-dark">{{ $products->total() }}</span> produk
+                </small>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex justify-content-center justify-content-md-end">
+                    {{ $products->appends(request()->query())->links('pagination::bootstrap-5') }}
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <style>
@@ -146,7 +152,7 @@ FUNGSI: Daftar produk dengan desain modern & responsif
         object-fit: cover;
     }
 
-    /* 2. Badge Status (Warna Font Full & Background Soft) */
+    /* 2. Badge Status */
     .badge-status {
         display: inline-block;
         padding: 0.4em 1em;
@@ -172,13 +178,42 @@ FUNGSI: Daftar produk dengan desain modern & responsif
         transform: scale(1.1);
     }
 
-    /* 4. Utility */
+    /* 4. MODERN PAGINATION STYLING (MATCHING ORDER STYLE) */
+    .pagination {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 0;
+    }
+    .pagination .page-item .page-link {
+        border: none;
+        border-radius: 10px !important;
+        padding: 8px 16px;
+        font-weight: 600;
+        color: #495057;
+        background-color: #f8f9fa;
+        transition: all 0.2s ease;
+        font-size: 0.875rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .pagination .page-item.active .page-link {
+        background-color: #111 !important; /* Warna Hitam */
+        color: #fff !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    .pagination .page-item:not(.active):hover .page-link {
+        background-color: #e9ecef;
+        color: #111;
+        transform: translateY(-2px);
+    }
+    .pagination .page-item.disabled .page-link {
+        background-color: transparent;
+        color: #ced4da;
+    }
+
+    /* Utility */
     .rounded-4 { border-radius: 1rem !important; }
     .tracking-wider { letter-spacing: 0.05em; }
     .x-small { font-size: 0.7rem; }
     .table thead th { background-color: #f8f9fa; font-weight: 600; }
-    
-    /* Pagination Styling agar bulat */
-    .pagination { --bs-pagination-border-radius: 50rem; }
 </style>
 @endsection

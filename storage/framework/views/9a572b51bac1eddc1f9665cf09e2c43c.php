@@ -10,13 +10,13 @@
             <h2 class="fw-bolder text-dark mb-1" style="letter-spacing: -1px;">User Directory</h2>
             <p class="text-muted small mb-0">Total <?php echo e($users->total()); ?> akun terdaftar dalam sistem.</p>
         </div>
-        <button class="btn btn-dark rounded-3 px-4 py-2 fw-semibold shadow-sm mt-3 mt-md-0 d-flex align-items-center">
+        <button class="btn btn-dark rounded-pill px-4 py-2 fw-bold shadow-sm mt-3 mt-md-0 d-flex align-items-center">
             <i class="bi bi-plus-lg me-2"></i> Create New User
         </button>
     </div>
 
     
-    <div class="card border-0 shadow-sm rounded-4">
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
@@ -35,9 +35,8 @@
                             <td class="ps-4 py-3">
                                 <div class="d-flex align-items-center">
                                     <div class="modern-avatar me-3">
-                                        
                                         <?php if($user->avatar): ?>
-                                            <img src="<?php echo e(Storage::url($user->avatar)); ?>" class="rounded-circle object-fit-cover w-100 h-100">
+                                            <img src="<?php echo e(Storage::url($user->avatar)); ?>" class="rounded-circle object-fit-cover w-100 h-100 border">
                                         <?php else: ?>
                                             <div class="avatar-placeholder">
                                                 <?php echo e(strtoupper(substr($user->name, 0, 1))); ?>
@@ -57,7 +56,7 @@
                             <td>
                                 <?php if($user->is_admin): ?>
                                     <div class="d-flex align-items-center">
-                                        <div class="dot bg-primary me-2"></div>
+                                        <div class="dot bg-primary me-2 shadow-sm"></div>
                                         <span class="small fw-bold text-dark">Administrator</span>
                                     </div>
                                 <?php else: ?>
@@ -78,11 +77,11 @@
                                     <button class="btn btn-action-minimal" data-bs-toggle="dropdown">
                                         <i class="bi bi-three-dots-vertical"></i>
                                     </button>
-                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3">
-                                        <li><a class="dropdown-item py-2 small" href="#"><i class="bi bi-pencil me-2 text-warning"></i> Edit Profile</a></li>
-                                        <li><a class="dropdown-item py-2 small" href="#"><i class="bi bi-shield-lock me-2 text-info"></i> Reset Password</a></li>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3">
+                                        <li><a class="dropdown-item py-2 small fw-medium" href="#"><i class="bi bi-pencil me-2 text-warning"></i> Edit Profile</a></li>
+                                        <li><a class="dropdown-item py-2 small fw-medium" href="#"><i class="bi bi-shield-lock me-2 text-info"></i> Reset Password</a></li>
                                         <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item py-2 small text-danger" href="#"><i class="bi bi-trash3 me-2"></i> Remove Access</a></li>
+                                        <li><a class="dropdown-item py-2 small text-danger fw-medium" href="#"><i class="bi bi-trash3 me-2"></i> Remove Access</a></li>
                                     </ul>
                                 </div>
                             </td>
@@ -90,8 +89,10 @@
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                         <tr>
                             <td colspan="5" class="text-center py-5">
-                                <img src="https://illustrations.popsy.co/gray/fogg-order-completed.svg" style="width: 150px;" class="mb-3">
-                                <p class="text-muted">No members found in the directory.</p>
+                                <div class="py-4">
+                                    <i class="bi bi-people display-1 text-muted opacity-25"></i>
+                                    <p class="text-muted mt-3">No members found in the directory.</p>
+                                </div>
                             </td>
                         </tr>
                         <?php endif; ?>
@@ -99,12 +100,23 @@
                 </table>
             </div>
         </div>
-    </div>
 
-    
-    <div class="mt-4">
-        <?php echo e($users->links('pagination::bootstrap-5')); ?>
+        
+        <div class="card-footer bg-white py-4 px-4 border-0">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                    <small class="text-muted fw-medium">
+                        Showing <span class="text-dark"><?php echo e($users->firstItem() ?? 0); ?></span> to <span class="text-dark"><?php echo e($users->lastItem() ?? 0); ?></span> of <span class="text-dark"><?php echo e($users->total()); ?></span> members
+                    </small>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex justify-content-center justify-content-md-end">
+                        <?php echo e($users->appends(request()->query())->links('pagination::bootstrap-5')); ?>
 
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -170,11 +182,42 @@
         letter-spacing: 0.05em;
         border-bottom: 1px solid #f1f5f9;
     }
-    tr { transition: background-color 0.2s ease; }
     tr:hover { background-color: #fafafa !important; }
     .x-small { font-size: 0.7rem; }
 
-    /* 7. Dropdown Styling */
+    /* 7. CUSTOM MODERN PAGINATION (MATCHING PREVIOUS PAGES) */
+    .pagination {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 0;
+    }
+    .pagination .page-item .page-link {
+        border: none;
+        border-radius: 10px !important;
+        padding: 8px 16px;
+        font-weight: 600;
+        color: #495057;
+        background-color: #f8f9fa;
+        transition: all 0.2s ease;
+        font-size: 0.875rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .pagination .page-item.active .page-link {
+        background-color: #111 !important; /* Warna Hitam */
+        color: #fff !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    .pagination .page-item:not(.active):hover .page-link {
+        background-color: #e9ecef;
+        color: #111;
+        transform: translateY(-2px);
+    }
+    .pagination .page-item.disabled .page-link {
+        background-color: transparent;
+        color: #ced4da;
+    }
+
+    /* 8. Dropdown Styling */
     .dropdown-item:active { background-color: #0f172a; }
 </style>
 <?php $__env->stopSection(); ?>

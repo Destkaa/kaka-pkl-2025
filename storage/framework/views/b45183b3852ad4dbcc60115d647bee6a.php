@@ -1,7 +1,5 @@
 
 
-
-
 <?php $__env->startSection('title', 'Manajemen Pesanan'); ?>
 
 <?php $__env->startPush('styles'); ?>
@@ -25,13 +23,15 @@
         border: none;
     }
 
-    /* Soft Badge Styles */
+    /* Soft Badge Styles with Icons */
     .badge-soft {
         padding: 6px 14px;
         border-radius: 10px;
         font-weight: 600;
         font-size: 12px;
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
     }
     .bg-soft-warning { background-color: #fff9db; color: #f08c00; }
     .bg-soft-info    { background-color: #e7f5ff; color: #1c7ed6; }
@@ -49,6 +49,20 @@
     .nav-pills .nav-link.active {
         background-color: #111;
         color: #fff;
+    }
+
+    /* Pagination (Same as yours) */
+    .pagination .page-item .page-link {
+        border: none;
+        border-radius: 10px !important;
+        padding: 8px 16px;
+        font-weight: 600;
+        color: #495057;
+        background-color: #f8f9fa;
+    }
+    .pagination .page-item.active .page-link {
+        background-color: #111 !important;
+        color: #fff !important;
     }
 </style>
 <?php $__env->stopPush(); ?>
@@ -73,28 +87,54 @@
     <div class="row g-3 mb-4">
         <div class="col-md-3">
             <div class="card card-stats shadow-sm border-0 p-3">
-                <small class="text-muted fw-bold text-uppercase">Total Pesanan</small>
-                <h3 class="fw-bold mb-0 mt-1"><?php echo e($orders->total()); ?></h3>
-            </div>
-        </div>
-        
-        <div class="col-md-3">
-            <div class="card card-stats shadow-sm border-0 p-3">
-                <small class="text-muted fw-bold text-uppercase text-warning">Pending</small>
-                
-                <h3 class="fw-bold mb-0 mt-1"><?php echo e(\App\Models\Order::where('status', 'pending')->count()); ?></h3>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card card-stats shadow-sm border-0 p-3">
-                <small class="text-muted fw-bold text-uppercase text-info">Proses</small>
-                <h3 class="fw-bold mb-0 mt-1"><?php echo e(\App\Models\Order::where('status', 'processing')->count()); ?></h3>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted fw-bold text-uppercase">Total Pesanan</small>
+                        <h3 class="fw-bold mb-0 mt-1"><?php echo e($orders->total()); ?></h3>
+                    </div>
+                    <div class="bg-light p-2 rounded-3 text-dark">
+                        <i class="bi bi-cart-fill fs-4"></i>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="card card-stats shadow-sm border-0 p-3">
-                <small class="text-muted fw-bold text-uppercase text-success">Selesai</small>
-                <h3 class="fw-bold mb-0 mt-1"><?php echo e(\App\Models\Order::where('status', 'completed')->count()); ?></h3>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted fw-bold text-uppercase text-warning">Pending</small>
+                        <h3 class="fw-bold mb-0 mt-1"><?php echo e(\App\Models\Order::where('status', 'pending')->count()); ?></h3>
+                    </div>
+                    <div class="bg-soft-warning p-2 rounded-3">
+                        <i class="bi bi-clock-history fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-stats shadow-sm border-0 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted fw-bold text-uppercase text-info">Proses</small>
+                        <h3 class="fw-bold mb-0 mt-1"><?php echo e(\App\Models\Order::where('status', 'processing')->count()); ?></h3>
+                    </div>
+                    <div class="bg-soft-info p-2 rounded-3">
+                        <i class="bi bi-box-seam fs-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card card-stats shadow-sm border-0 p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted fw-bold text-uppercase text-success">Selesai</small>
+                        <h3 class="fw-bold mb-0 mt-1"><?php echo e(\App\Models\Order::where('status', 'completed')->count()); ?></h3>
+                    </div>
+                    <div class="bg-soft-success p-2 rounded-3">
+                        <i class="bi bi-check-circle-fill fs-4"></i>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -131,7 +171,7 @@
                         <th class="ps-4">No. Order</th>
                         <th>Pelanggan</th>
                         <th>Waktu Transaksi</th>
-                        <th>Total Pembayaran</th>
+                        <th>Total</th>
                         <th class="text-center">Status</th>
                         <th class="text-end pe-4">Aksi</th>
                     </tr>
@@ -155,28 +195,28 @@
                             </td>
                             <td class="text-center">
                                 <?php switch($order->status):
-                                    case ('pending'): ?>
-                                        <span class="badge-soft bg-soft-warning">Pending</span>
+                                    case ('pending'): ?> 
+                                        <span class="badge-soft bg-soft-warning"><i class="bi bi-clock"></i> Pending</span> 
                                         <?php break; ?>
-                                    <?php case ('processing'): ?>
-                                        <span class="badge-soft bg-soft-info">Proses</span>
+                                    <?php case ('processing'): ?> 
+                                        <span class="badge-soft bg-soft-info"><i class="bi bi-gear-fill"></i> Proses</span> 
                                         <?php break; ?>
-                                    <?php case ('shipped'): ?>
-                                        <span class="badge-soft bg-soft-info">Dikirim</span>
+                                    <?php case ('shipped'): ?> 
+                                        <span class="badge-soft bg-soft-info"><i class="bi bi-truck"></i> Dikirim</span> 
                                         <?php break; ?>
-                                    <?php case ('completed'): ?>
-                                        <span class="badge-soft bg-soft-success">Selesai</span>
+                                    <?php case ('completed'): ?> 
+                                        <span class="badge-soft bg-soft-success"><i class="bi bi-check-all"></i> Selesai</span> 
                                         <?php break; ?>
-                                    <?php case ('cancelled'): ?>
-                                        <span class="badge-soft bg-soft-danger">Batal</span>
+                                    <?php case ('cancelled'): ?> 
+                                        <span class="badge-soft bg-soft-danger"><i class="bi bi-x-circle"></i> Batal</span> 
                                         <?php break; ?>
-                                    <?php default: ?>
+                                    <?php default: ?> 
                                         <span class="badge-soft bg-soft-secondary"><?php echo e($order->status); ?></span>
                                 <?php endswitch; ?>
                             </td>
                             <td class="text-end pe-4">
                                 <a href="<?php echo e(route('admin.orders.show', $order->id)); ?>" class="btn btn-sm btn-dark rounded-pill px-3 fw-bold shadow-sm">
-                                    Detail
+                                    <i class="bi bi-eye me-1"></i> Detail
                                 </a>
                             </td>
                         </tr>
@@ -194,14 +234,18 @@
             </table>
         </div>
 
-        <div class="card-footer bg-white py-3 px-4 border-0">
-            <div class="d-flex justify-content-between align-items-center">
-                <small class="text-muted">
-                    Menampilkan <?php echo e($orders->firstItem()); ?> sampai <?php echo e($orders->lastItem()); ?> dari <?php echo e($orders->total()); ?> pesanan
-                </small>
-                <div>
-                    <?php echo e($orders->appends(request()->query())->links()); ?>
+        <div class="card-footer bg-white py-4 px-4 border-0">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
+                    <small class="text-muted fw-medium">
+                        Menampilkan <span class="text-dark"><?php echo e($orders->firstItem() ?? 0); ?></span> - <span class="text-dark"><?php echo e($orders->lastItem() ?? 0); ?></span> dari <span class="text-dark"><?php echo e($orders->total()); ?></span> pesanan
+                    </small>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex justify-content-center justify-content-md-end">
+                        <?php echo e($orders->appends(request()->query())->links('pagination::bootstrap-5')); ?>
 
+                    </div>
                 </div>
             </div>
         </div>
