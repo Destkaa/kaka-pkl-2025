@@ -18,6 +18,7 @@
         <form action="{{ route('checkout.store') }}" method="POST">
             @csrf
             <div class="row g-4">
+                {{-- Form Pengiriman --}}
                 <div class="col-lg-8">
                     <div class="card border-0 shadow-sm rounded-4 mb-4">
                         <div class="card-body p-4">
@@ -52,6 +53,7 @@
                     </div>
                 </div>
 
+                {{-- Ringkasan Pesanan --}}
                 <div class="col-lg-4">
                     <div class="card border-0 shadow-lg rounded-4 sticky-top" style="top: 2rem; z-index: 10;">
                         <div class="card-body p-4">
@@ -61,22 +63,27 @@
                                 @php $calculatedTotal = 0; @endphp
                                 @foreach($cart->items as $item)
                                     @php 
-                                        // Hitung subtotal per item secara manual untuk memastikan tidak 0
-                                        $itemSubtotal = $item->product->price * $item->quantity; 
+                                        // FIX: Gunakan display_price agar diskon ikut terhitung!
+                                        $currentPrice = $item->product->display_price ?? 0;
+                                        $itemSubtotal = $currentPrice * $item->quantity; 
                                         $calculatedTotal += $itemSubtotal;
                                     @endphp
                                     <div class="d-flex align-items-center mb-3">
                                         <div class="product-img-mini rounded-3 me-3">
-                                            @if($item->product->image)
-                                                <img src="{{ asset('storage/' . $item->product->image) }}" alt="" class="img-fluid rounded-3">
-                                            @endif
+                                            {{-- FIX: Gunakan image_url yang sudah kita buat di Model --}}
+                                            <img src="{{ $item->product->image_url }}" alt="" class="img-fluid rounded-3">
                                             <span class="qty-badge">{{ $item->quantity }}</span>
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="mb-0 small fw-bold text-dark text-truncate" style="max-width: 150px;">
                                                 {{ $item->product->name }}
                                             </h6>
-                                            <small class="text-muted">Rp {{ number_format($item->product->price, 0, ',', '.') }}</small>
+                                            @if($item->product->has_discount)
+                                                <small class="text-muted text-decoration-line-through">Rp {{ number_format($item->product->price, 0, ',', '.') }}</small><br>
+                                                <small class="text-success fw-bold">Rp {{ number_format($currentPrice, 0, ',', '.') }}</small>
+                                            @else
+                                                <small class="text-muted">Rp {{ number_format($currentPrice, 0, ',', '.') }}</small>
+                                            @endif
                                         </div>
                                         <div class="text-end">
                                             <span class="small fw-bold">Rp {{ number_format($itemSubtotal, 0, ',', '.') }}</span>
@@ -137,17 +144,19 @@
     }
     .bg-primary-light { background-color: rgba(13, 110, 253, 0.1); }
     .product-img-mini {
-        width: 48px; height: 48px;
-        background-color: #f0f3f6;
+        width: 54px; height: 54px;
+        background-color: #fff;
         position: relative;
-        border: 1px solid #eee;
+        border: 1px solid #eef2f7;
+        display: flex; align-items: center; justify-content: center;
     }
-    .product-img-mini img { width: 100%; height: 100%; object-fit: cover; }
+    .product-img-mini img { max-width: 100%; max-height: 100%; object-fit: contain; }
     .qty-badge {
         position: absolute; top: -8px; right: -8px;
-        background-color: #1e293b; color: white;
-        font-size: 10px; padding: 2px 6px;
+        background-color: #0d6efd; color: white;
+        font-size: 10px; padding: 2px 7px;
         border-radius: 50%; font-weight: bold;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
     .shadow-primary { box-shadow: 0 10px 20px rgba(13, 110, 253, 0.2); }
     hr.dashed { border-top: 2px dashed #eef2f7; background: none; }

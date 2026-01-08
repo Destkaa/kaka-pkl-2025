@@ -11,17 +11,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Alias Middleware
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
-            // ↑ 'admin' adalah nama alias
-            // ↑ AdminMiddleware::class adalah class yang dijalankan
         ]);
 
-         $middleware->validateCsrfTokens(except: [
-            'midtrans/notification', // Endpoint webhook kita
-            'midtrans/*',            // Wildcard (jika ada route lain)
+        // IZINKAN MIDTRANS MASUK (PENTING!)
+        $middleware->validateCsrfTokens(except: [
+            'midtrans/callback', // Harus sama dengan di web.php
+            'midtrans/*',        // Wildcard jaga-jaga
         ]);
-
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

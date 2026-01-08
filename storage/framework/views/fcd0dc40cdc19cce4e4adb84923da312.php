@@ -6,7 +6,6 @@
 
 <?php $__env->startPush('styles'); ?>
 <style>
-    /* 1. Perbaikan Gambar Produk (Anti-Gepeng) */
     .cart-img-container {
         width: 80px;
         height: 80px;
@@ -20,31 +19,17 @@
         justify-content: center;
         flex-shrink: 0; 
     }
-
     .cart-img-container img {
         max-width: 100%;
         max-height: 100%;
         object-fit: contain;
     }
-
-    /* 2. Styling Soft UI */
-    .card {
-        border-radius: 20px;
-        border: none;
-    }
-
+    .card { border-radius: 20px; border: none; }
     .header-icon-box {
-        width: 64px;
-        height: 64px;
-        min-width: 64px;
-        min-height: 64px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
+        width: 64px; height: 64px;
+        display: flex; align-items: center; justify-content: center;
         border-radius: 50%;
     }
-
     .qty-control {
         background: #f1f5f9;
         border-radius: 50px;
@@ -55,32 +40,18 @@
         border: 1px solid #e2e8f0;
         width: 110px;
     }
-
     .qty-btn {
-        width: 32px;
-        height: 32px;
-        min-width: 32px;
-        min-height: 32px;
+        width: 32px; height: 32px;
         border-radius: 50% !important;
-        background: white;
-        border: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        background: white; border: none;
+        display: flex; align-items: center; justify-content: center;
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         transition: all 0.2s;
-        flex-shrink: 0;
     }
-
     .qty-btn:hover { background: var(--bs-primary); color: white; }
-
     .qty-input {
-        width: 35px;
-        border: none;
-        background: transparent;
-        text-align: center;
-        font-weight: bold;
-        padding: 0;
+        width: 35px; border: none; background: transparent;
+        text-align: center; font-weight: bold;
     }
 </style>
 <?php $__env->stopPush(); ?>
@@ -94,12 +65,13 @@
         </div>
         <div>
             <h2 class="fw-bold mb-0">Keranjang Belanja</h2>
-            <p class="text-muted mb-0">Periksa kembali pesanan Anda sebelum melakukan pembayaran</p>
+            <p class="text-muted mb-0">Periksa kembali belanjaan Anda sebelum checkout.</p>
         </div>
     </div>
 
     <?php if($cart && $cart->items->count()): ?>
     <div class="row g-4">
+        
         <div class="col-lg-8">
             <div class="card shadow-sm mb-4">
                 <div class="card-body p-0">
@@ -116,111 +88,113 @@
                             <tbody>
                                 <?php $grandTotal = 0; ?>
                                 <?php $__currentLoopData = $cart->items; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                <?php 
-                                    // Logic Anti-Zero: Hitung manual di Blade
-                                    $price = $item->product->price ?? 0;
-                                    $itemSubtotal = $price * $item->quantity;
-                                    $grandTotal += $itemSubtotal;
-                                ?>
-                                <tr>
-                                    <td class="ps-4 py-4">
-                                        <div class="d-flex align-items-center">
-                                            <div class="cart-img-container me-3 shadow-sm">
-                                                <img src="<?php echo e($item->product?->image_url ?? asset('images/placeholder.png')); ?>" 
-                                                     alt="<?php echo e($item->product?->name ?? 'Produk'); ?>">
-                                            </div>
-                                            <div class="min-w-0">
-                                                <?php if($item->product): ?>
-                                                    <a href="<?php echo e(route('catalog.show', $item->product->slug)); ?>" 
-                                                       class="text-decoration-none text-dark fw-bold mb-1 d-block text-truncate" style="max-width: 200px;">
-                                                        <?php echo e($item->product->name); ?>
+                                    <?php 
+                                        // AMBIL HARGA DISKON JIKA ADA (Logika di Model Product)
+                                        $currentPrice = $item->product->display_price ?? 0;
+                                        $itemSubtotal = $currentPrice * $item->quantity;
+                                        $grandTotal += $itemSubtotal;
+                                    ?>
+                                    <tr>
+                                        <td class="ps-4 py-4">
+                                            <div class="d-flex align-items-center">
+                                                <div class="cart-img-container me-3 shadow-sm">
+                                                    <img src="<?php echo e($item->product?->image_url ?? asset('images/placeholder.png')); ?>" 
+                                                         alt="<?php echo e($item->product?->name); ?>">
+                                                </div>
+                                                <div class="min-w-0">
+                                                    <?php if($item->product): ?>
+                                                        <a href="<?php echo e(route('catalog.show', $item->product->slug)); ?>" 
+                                                           class="text-decoration-none text-dark fw-bold mb-1 d-block text-truncate" style="max-width: 220px;">
+                                                            <?php echo e($item->product->name); ?>
 
-                                                    </a>
-                                                    <div class="d-flex align-items-center gap-2">
-                                                        <span class="badge bg-primary-subtle text-primary fw-normal small">
-                                                            <?php echo e($item->product->category?->name ?? 'Uncategorized'); ?>
+                                                        </a>
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <?php if($item->product->has_discount): ?>
+                                                                <span class="text-muted small text-decoration-line-through">
+                                                                    Rp <?php echo e(number_format($item->product->price, 0, ',', '.')); ?>
 
-                                                        </span>
-                                                        <span class="text-muted small">@ Rp <?php echo e(number_format($price, 0, ',', '.')); ?></span>
-                                                    </div>
-                                                <?php else: ?>
-                                                    <span class="text-danger fw-bold">Produk Tidak Tersedia</span>
-                                                <?php endif; ?>
+                                                                </span>
+                                                                <span class="text-success fw-bold small">
+                                                                    Rp <?php echo e(number_format($currentPrice, 0, ',', '.')); ?>
+
+                                                                </span>
+                                                            <?php else: ?>
+                                                                <span class="text-muted small">Rp <?php echo e(number_format($currentPrice, 0, ',', '.')); ?></span>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    <?php else: ?>
+                                                        <span class="text-danger fw-bold small">Produk Tidak Tersedia</span>
+                                                    <?php endif; ?>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                    
-                                    <td class="text-center">
-                                        <?php if($item->product): ?>
-                                        <form action="<?php echo e(route('cart.update', $item->id)); ?>" method="POST" id="update-form-<?php echo e($item->id); ?>">
-                                            <?php echo csrf_field(); ?>
-                                            <?php echo method_field('PATCH'); ?>
-                                            <div class="qty-control shadow-sm mx-auto">
-                                                <button type="button" class="qty-btn" onclick="updateQty(<?php echo e($item->id); ?>, -1)">
-                                                    <i class="bi bi-dash"></i>
+                                        </td>
+                                        
+                                        <td class="text-center">
+                                            <?php if($item->product): ?>
+                                            <form action="<?php echo e(route('cart.update', $item->id)); ?>" method="POST" id="update-form-<?php echo e($item->id); ?>">
+                                                <?php echo csrf_field(); ?>
+                                                <?php echo method_field('PATCH'); ?>
+                                                <div class="qty-control shadow-sm mx-auto">
+                                                    <button type="button" class="qty-btn" onclick="updateQty(<?php echo e($item->id); ?>, -1)">
+                                                        <i class="bi bi-dash"></i>
+                                                    </button>
+                                                    <input type="number" name="quantity" id="qty-<?php echo e($item->id); ?>" 
+                                                           value="<?php echo e($item->quantity); ?>" min="1" max="<?php echo e($item->product->stock ?? 999); ?>"
+                                                           class="qty-input" readonly>
+                                                    <button type="button" class="qty-btn" onclick="updateQty(<?php echo e($item->id); ?>, 1)">
+                                                        <i class="bi bi-plus"></i>
+                                                    </button>
+                                                </div>
+                                            </form>
+                                            <?php endif; ?>
+                                        </td>
+
+                                        <td class="text-end fw-bold text-dark">
+                                            Rp <?php echo e(number_format($itemSubtotal, 0, ',', '.')); ?>
+
+                                        </td>
+
+                                        <td class="text-center pe-4">
+                                            <form action="<?php echo e(route('cart.remove', $item->id)); ?>" method="POST">
+                                                <?php echo csrf_field(); ?>
+                                                <?php echo method_field('DELETE'); ?>
+                                                <button type="submit" class="btn btn-light btn-sm rounded-circle text-danger border shadow-sm" 
+                                                        onclick="return confirm('Hapus item ini?')">
+                                                    <i class="bi bi-trash"></i>
                                                 </button>
-                                                <input type="number" name="quantity" id="qty-<?php echo e($item->id); ?>" 
-                                                       value="<?php echo e($item->quantity); ?>" min="1" max="<?php echo e($item->product->stock ?? 999); ?>"
-                                                       class="qty-input" readonly>
-                                                <button type="button" class="qty-btn" onclick="updateQty(<?php echo e($item->id); ?>, 1)">
-                                                    <i class="bi bi-plus"></i>
-                                                </button>
-                                            </div>
-                                        </form>
-                                        <?php endif; ?>
-                                    </td>
-
-                                    <td class="text-end fw-bold text-dark">
-                                        Rp <?php echo e(number_format($itemSubtotal, 0, ',', '.')); ?>
-
-                                    </td>
-
-                                    <td class="text-center pe-4">
-                                        <form action="<?php echo e(route('cart.remove', $item->id)); ?>" method="POST">
-                                            <?php echo csrf_field(); ?>
-                                            <?php echo method_field('DELETE'); ?>
-                                            <button type="submit" class="btn btn-light btn-sm rounded-circle text-danger shadow-sm border" 
-                                                    onclick="return confirm('Hapus item ini?')">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
+                                            </form>
+                                        </td>
+                                    </tr>
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
-            
-            <a href="<?php echo e(route('catalog.index')); ?>" class="btn btn-outline-secondary rounded-pill px-4 fw-medium">
-                <i class="bi bi-arrow-left me-2"></i>Tambah Produk Lainnya
+            <a href="<?php echo e(route('catalog.index')); ?>" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="bi bi-arrow-left me-2"></i>Lanjut Belanja
             </a>
         </div>
 
         
         <div class="col-lg-4">
-            <div class="card shadow-sm border-0 sticky-top" style="top: 110px;">
+            <div class="card shadow-sm sticky-top" style="top: 100px;">
                 <div class="card-body p-4">
-                    <h5 class="fw-bold mb-4">Ringkasan Belanja</h5>
-                    
+                    <h5 class="fw-bold mb-4">Ringkasan Pesanan</h5>
                     <div class="d-flex justify-content-between mb-3">
-                        <span class="text-muted">Total Barang</span>
-                        <span class="fw-bold"><?php echo e($cart->items->sum('quantity')); ?> unit</span>
+                        <span class="text-muted">Total Unit</span>
+                        <span class="fw-bold"><?php echo e($cart->items->sum('quantity')); ?> Item</span>
                     </div>
-
                     <hr class="my-4 opacity-25">
-
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <span class="h6 mb-0 fw-bold">Total Tagihan</span>
+                        <span class="h6 mb-0 fw-bold">Total Harga</span>
                         <span class="h4 mb-0 fw-bold text-primary">
                             Rp <?php echo e(number_format($grandTotal, 0, ',', '.')); ?>
 
                         </span>
                     </div>
-
-                    <a href="<?php echo e(route('checkout.index')); ?>" class="btn btn-primary btn-lg w-100 rounded-pill shadow-lg mb-3 py-3 fw-bold">
-                        Checkout Sekarang <i class="bi bi-arrow-right ms-2"></i>
+                    <a href="<?php echo e(route('checkout.index')); ?>" class="btn btn-primary btn-lg w-100 rounded-pill shadow py-3 fw-bold">
+                        Lanjut ke Checkout <i class="bi bi-arrow-right ms-2"></i>
                     </a>
                 </div>
             </div>
@@ -229,13 +203,11 @@
     <?php else: ?>
     <div class="card shadow-sm border-0 py-5 text-center">
         <div class="card-body py-5">
-            <div class="header-icon-box bg-light d-inline-flex mb-4 mx-auto">
-                <i class="bi bi-cart-x display-1 text-muted"></i>
-            </div>
-            <h3 class="fw-bold">Wah, keranjangmu masih kosong!</h3>
-            <p class="text-muted mb-4">Ayo mulai belanja dan temukan produk impianmu.</p>
+            <i class="bi bi-cart-x display-1 text-muted mb-4"></i>
+            <h3 class="fw-bold">Keranjangmu Kosong</h3>
+            <p class="text-muted mb-4">Sepertinya Anda belum memilih produk apa pun.</p>
             <a href="<?php echo e(route('catalog.index')); ?>" class="btn btn-primary btn-lg px-5 rounded-pill shadow">
-                <i class="bi bi-search me-2"></i>Jelajahi Katalog
+                Cari Produk Sekarang
             </a>
         </div>
     </div>

@@ -1,50 +1,57 @@
 <?php
-// app/Services/OrderService.php
 
 namespace App\Services;
 
-use App\Models\Cart;
 use App\Models\Order;
 use App\Models\User;
+use App\Models\Product;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class OrderService
 {
-    /**
-     * Membuat Order baru dari Keranjang belanja.
-     */
     public function createOrder(User $user, array $shippingData): Order
     {
-        // 1. Ambil Keranjang User dengan Eager Loading agar data produk pasti terbaca
-        $cart = $user->cart;
+        // 1. Ambil Keranjang dengan Eager Loading
+        $cart = $user->cart()->with('items.product')->first();
 
-        if (! $cart || $cart->items->isEmpty()) {
+        if (!$cart || $cart->items->isEmpty()) {
             throw new \Exception("Keranjang belanja kosong.");
         }
 
-        // ==================== DATABASE TRANSACTION START ====================
         return DB::transaction(function () use ($user, $cart, $shippingData) {
-            
-            // A. VALIDASI STOK & HITUNG TOTAL
             $totalAmount = 0;
+            $itemsToProcess = [];
+
+            // A. VALIDASI STOK & HITUNG HARGA
             foreach ($cart->items as $item) {
-                if ($item->quantity > $item->product->stock) {
-                    throw new \Exception("Stok produk {$item->product->name} tidak mencukupi.");
+                $product = $item->product;
+
+                if ($item->quantity > $product->stock) {
+                    throw new \Exception("Stok produk {$product->name} tidak mencukupi.");
                 }
 
-                // FIX: Gunakan discount_price jika ada, jika tidak gunakan price reguler
-                $activePrice = $item->product->discount_price > 0 
-                               ? $item->product->discount_price 
-                               : $item->product->price;
+                // Logika: Gunakan harga diskon jika > 0, jika tidak gunakan harga normal
+                $originalPrice = (float) $product->price;
+                $discountPrice = (float) $product->discount_price;
+                $finalPrice = ($discountPrice > 0) ? $discountPrice : $originalPrice;
 
-                $totalAmount += $activePrice * $item->quantity;
+                $itemsToProcess[] = [
+                    'product_id'   => $item->product_id,
+                    'product_name' => $product->name,
+                    'price'        => $finalPrice,
+                    'quantity'     => $item->quantity,
+                    'subtotal'     => $finalPrice * $item->quantity,
+                ];
+
+                $totalAmount += ($finalPrice * $item->quantity);
             }
 
             // B. BUAT HEADER ORDER
             $order = Order::create([
                 'user_id'          => $user->id,
-                'order_number'     => 'ORD-' . strtoupper(Str::random(10)),
+                'order_number'     => 'GPRO-' . date('YmdHis') . '-' . strtoupper(Str::random(5)),
                 'status'           => 'pending',
                 'payment_status'   => 'unpaid',
                 'shipping_name'    => $shippingData['name'],
@@ -53,40 +60,26 @@ class OrderService
                 'total_amount'     => $totalAmount,
             ]);
 
-            // C. PINDAHKAN ITEMS
-            foreach ($cart->items as $item) {
-                // FIX: Samakan logika penentuan harga dengan di atas agar tidak NULL
-                $activePrice = $item->product->discount_price > 0 
-                               ? $item->product->discount_price 
-                               : $item->product->price;
-
-                $order->items()->create([
-                    'product_id'   => $item->product_id,
-                    'product_name' => $item->product->name,
-                    'price'        => $activePrice, // Sekarang tidak akan NULL
-                    'quantity'     => $item->quantity,
-                    'subtotal'     => $activePrice * $item->quantity, // Sekarang tidak akan 0
-                ]);
-
-                $item->product->decrement('stock', $item->quantity);
+            // C. SIMPAN ITEMS & POTONG STOK
+            foreach ($itemsToProcess as $itemData) {
+                $order->items()->create($itemData);
+                Product::where('id', $itemData['product_id'])->decrement('stock', $itemData['quantity']);
             }
 
-            // D. Pastikan relasi user di-load sebelum generate Snap Token
-            $order->load('user');
-            $midtransService = new \App\Services\MidtransService();
+            // D. MIDTRANS SNAP TOKEN
+            $order->load(['user', 'items']);
             try {
+                $midtransService = new \App\Services\MidtransService();
                 $snapToken = $midtransService->createSnapToken($order);
                 $order->update(['snap_token' => $snapToken]);
             } catch (\Exception $e) {
-                // Jika gagal, biarkan snap_token tetap null
+                Log::error("Midtrans Error: " . $e->getMessage());
             }
 
             // E. BERSIHKAN KERANJANG
             $cart->items()->delete();
-            // $cart->delete(); // opsional
 
             return $order;
         });
-        // ==================== DATABASE TRANSACTION END ====================
     }
 }

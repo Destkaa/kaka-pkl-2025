@@ -1,5 +1,4 @@
 <?php
-// app/Services/MidtransService.php
 
 namespace App\Services;
 
@@ -21,30 +20,18 @@ class MidtransService
 
     public function createSnapToken(Order $order): string
     {
-        // Load relasi jika belum ada untuk menghindari error null
+        // Load relasi agar data item dan user tersedia
         $order->load(['items', 'user']);
 
         if ($order->items->isEmpty()) {
             throw new Exception('Order tidak memiliki item.');
         }
 
-        // 1. Transaction Details
-        // Pastikan (int) untuk membuang desimal karena Midtrans IDR tidak mendukung sen
-        $transactionDetails = [
-            'order_id'     => $order->order_number,
-            'gross_amount' => (int) $order->total_amount,
-        ];
-
-        // 2. Customer Details
+        // 1. Customer Details
         $customerDetails = [
             'first_name'       => $order->user->name,
             'email'            => $order->user->email,
             'phone'            => $order->shipping_phone ?? $order->user->phone ?? '',
-            'billing_address'  => [
-                'first_name' => $order->shipping_name,
-                'phone'      => $order->shipping_phone,
-                'address'    => $order->shipping_address,
-            ],
             'shipping_address' => [
                 'first_name' => $order->shipping_name,
                 'phone'      => $order->shipping_phone,
@@ -52,12 +39,17 @@ class MidtransService
             ],
         ];
 
-        // 3. Item Details
+        // 2. Item Details & Calculation
         $itemDetails = [];
         $calculatedGrossAmount = 0;
 
         foreach ($order->items as $item) {
-            $price = (int) $item->price;
+            /**
+             * PERBAIKAN: 
+             * Ambil harga dari tabel order_items. 
+             * Pastikan saat checkout, kamu sudah menyimpan harga DISKON ke kolom ini.
+             */
+            $price = (int) $item->price; 
             $qty = (int) $item->quantity;
             $subtotal = $price * $qty;
 
@@ -70,7 +62,7 @@ class MidtransService
             $calculatedGrossAmount += $subtotal;
         }
 
-        // Tambahkan ongkir jika ada
+        // Tambahkan Biaya Pengiriman (Ongkir)
         if ($order->shipping_cost > 0) {
             $shippingCost = (int) $order->shipping_cost;
             $itemDetails[] = [
@@ -82,21 +74,35 @@ class MidtransService
             $calculatedGrossAmount += $shippingCost;
         }
 
-        // --- VALIDASI ANTI ERROR 2603 ---
-        // Jika total rincian tidak sama dengan total amount di header, 
-        // Midtrans akan mengembalikan error. Kita paksa agar sinkron.
-        if ($calculatedGrossAmount !== (int) $order->total_amount) {
-            $transactionDetails['gross_amount'] = $calculatedGrossAmount;
+        /**
+         * LOGIKA TAMBAHAN: Potongan Diskon Global (Kupon/Promo)
+         * Jika ada diskon di level total order, tambahkan sebagai harga minus.
+         */
+        if (isset($order->discount_amount) && $order->discount_amount > 0) {
+            $discount = (int) $order->discount_amount;
+            $itemDetails[] = [
+                'id'       => 'DISCOUNT',
+                'price'    => -$discount, // Harga negatif untuk mengurangi total
+                'quantity' => 1,
+                'name'     => 'Potongan Diskon',
+            ];
+            $calculatedGrossAmount -= $discount;
         }
 
-        // 4. Gabungkan parameter
+        // 3. Transaction Details
+        // Kita gunakan $calculatedGrossAmount agar sinkron dengan rincian item
+        $transactionDetails = [
+            'order_id'     => $order->order_number,
+            'gross_amount' => $calculatedGrossAmount,
+        ];
+
+        // 4. Parameter Gabungan
         $params = [
             'transaction_details' => $transactionDetails,
             'customer_details'    => $customerDetails,
             'item_details'        => $itemDetails,
-            // Opsional: Atur expiry agar tidak terlalu cepat expired
             'expiry' => [
-                'unit' => 'minutes',
+                'unit'     => 'minutes',
                 'duration' => 60
             ],
         ];
@@ -104,11 +110,11 @@ class MidtransService
         try {
             return Snap::getSnapToken($params);
         } catch (Exception $e) {
-            logger()->error('Midtrans Snap Token Error: ' . $e->getMessage(), [
+            logger()->error('Midtrans Snap Error: ' . $e->getMessage(), [
                 'order_id' => $order->order_number,
                 'params'   => $params
             ]);
-            throw new Exception('Gagal membuat transaksi pembayaran: ' . $e->getMessage());
+            throw new Exception('Gagal membuat transaksi: ' . $e->getMessage());
         }
     }
 

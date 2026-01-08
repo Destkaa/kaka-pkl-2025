@@ -94,12 +94,23 @@
                     </td>
                     <td class="pe-4 text-end">
                         <div class="d-flex justify-content-end gap-2">
-                            <a href="{{ route('admin.products.show', $product) }}" class="btn btn-icon btn-light rounded-circle" title="Detail">
-                                <i class="bi bi-eye text-primary"></i>
+                            {{-- Button Detail --}}
+                            <a href="{{ route('admin.products.show', $product) }}" class="btn-action btn-action-view" title="Detail">
+                                <i class="bi bi-eye"></i>
                             </a>
-                            <a href="{{ route('admin.products.edit', $product) }}" class="btn btn-icon btn-light rounded-circle" title="Edit">
-                                <i class="bi bi-pencil-square text-warning"></i>
+                            {{-- Button Edit --}}
+                            <a href="{{ route('admin.products.edit', $product) }}" class="btn-action btn-action-edit" title="Edit">
+                                <i class="bi bi-pencil-square"></i>
                             </a>
+                            {{-- Button Hapus --}}
+                            <form action="{{ route('admin.products.destroy', $product) }}" method="POST" 
+                                  onsubmit="return confirm('Yakin ingin menghapus produk ini?')" class="d-inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn-action btn-action-delete" title="Hapus">
+                                    <i class="bi bi-trash3-fill"></i>
+                                </button>
+                            </form>
                         </div>
                     </td>
                 </tr>
@@ -118,7 +129,7 @@
         </table>
     </div>
 
-    {{-- FOOTER DENGAN PAGINATION CUSTOM --}}
+    {{-- FOOTER DENGAN PAGINATION --}}
     <div class="card-footer bg-white py-4 px-4 border-0">
         <div class="row align-items-center">
             <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
@@ -136,7 +147,7 @@
 </div>
 
 <style>
-    /* 1. Gambar Produk Agar Tetap Simetris & Proporsional */
+    /* 1. Gambar Produk */
     .product-img-container {
         width: 50px;
         height: 50px;
@@ -163,51 +174,54 @@
     .status-success { background-color: rgba(25, 135, 84, 0.12); color: #198754; }
     .status-secondary { background-color: rgba(108, 117, 125, 0.12); color: #6c757d; }
 
-    /* 3. Aksi Buttons */
-    .btn-icon {
-        width: 35px;
-        height: 35px;
+    /* 3. TOMBOL AKSI MODERN (LEBIH BESAR & BULAT) */
+    .btn-action {
+        width: 38px;
+        height: 38px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 0;
-        transition: all 0.2s;
+        border-radius: 10px;
+        transition: all 0.2s ease;
+        border: 1px solid #edf2f7;
+        background-color: #ffffff;
+        text-decoration: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
-    .btn-icon:hover {
-        background-color: #e9ecef;
-        transform: scale(1.1);
+    .btn-action i {
+        font-size: 1.1rem;
+    }
+    .btn-action-view:hover {
+        background-color: #f0f9ff;
+        border-color: #bae6fd;
+        color: #0284c7;
+        transform: scale(1.08);
+    }
+    .btn-action-edit:hover {
+        background-color: #fffbeb;
+        border-color: #fef3c7;
+        color: #d97706;
+        transform: scale(1.08);
+    }
+    .btn-action-delete:hover {
+        background-color: #fef2f2;
+        border-color: #fee2e2;
+        color: #dc2626;
+        transform: scale(1.08);
     }
 
-    /* 4. MODERN PAGINATION STYLING (MATCHING ORDER STYLE) */
-    .pagination {
-        display: flex;
-        gap: 6px;
-        margin-bottom: 0;
-    }
+    /* 4. MODERN PAGINATION */
     .pagination .page-item .page-link {
         border: none;
         border-radius: 10px !important;
-        padding: 8px 16px;
+        margin: 0 3px;
         font-weight: 600;
         color: #495057;
         background-color: #f8f9fa;
-        transition: all 0.2s ease;
-        font-size: 0.875rem;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
     .pagination .page-item.active .page-link {
-        background-color: #111 !important; /* Warna Hitam */
+        background-color: #1a1a1a !important;
         color: #fff !important;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-    }
-    .pagination .page-item:not(.active):hover .page-link {
-        background-color: #e9ecef;
-        color: #111;
-        transform: translateY(-2px);
-    }
-    .pagination .page-item.disabled .page-link {
-        background-color: transparent;
-        color: #ced4da;
     }
 
     /* Utility */
