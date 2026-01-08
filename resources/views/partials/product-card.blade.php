@@ -1,6 +1,6 @@
 {{-- ================================================
      FILE: resources/views/partials/product-card.blade.php
-     FUNGSI: Card Produk GADGETPRO (Fix Dark Mode & No Purple Shadow)
+     FUNGSI: Card Produk GADGETPRO (Premium Black & Purple Accent)
      ================================================ --}}
 
 <div class="card product-card h-100 border-0 shadow-sm custom-hover">
@@ -33,7 +33,7 @@
         </div>
 
         <h6 class="product-title mb-3">
-            <a href="{{ route('catalog.show', $product->slug) }}" class="stretched-link">
+            <a href="{{ route('catalog.show', $product->slug) }}" class="stretched-link text-decoration-none">
                 {{ Str::limit($product->name, 45) }}
             </a>
         </h6>
@@ -82,151 +82,150 @@
 </div>
 
 <style>
-    /* --- 1. RESET & GHOSTING FIX (MENGHILANGKAN UNGU/BIRU) --- */
-    .product-card, 
-    .product-card a, 
-    .product-card button,
-    .product-card form {
-        -webkit-tap-highlight-color: transparent !important;
-        outline: none !important;
-        text-decoration: none !important;
-    }
-
-    .product-card a:focus, 
-    .product-card button:focus {
-        box-shadow: none !important;
-        outline: none !important;
-    }
-
-    /* --- 2. CARD CORE STYLING (DARK MODE COMPATIBLE) --- */
+    /* --- 1. RESET & CORE STYLING --- */
     .product-card {
-        border-radius: 20px !important;
-        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
-        background: var(--bg-card) !important;
-        border: 1px solid var(--border-color) !important;
+        border-radius: 24px !important;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        background: #ffffff !important;
+        border: 1px solid rgba(0,0,0,0.05) !important;
+        overflow: hidden;
     }
 
     .custom-hover:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.12) !important;
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
     }
 
-    /* --- 3. IMAGE SECTION --- */
+    /* --- 2. IMAGE SECTION --- */
     .img-container {
-        border-radius: 20px 20px 0 0;
         height: 220px;
-        background: #f8fafc; /* Placeholder warna sebelum gambar muat */
+        background: #f8fafc;
     }
 
     .img-zoom {
         height: 100%;
         width: 100%;
         object-fit: cover;
-        transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transition: transform 0.5s ease;
     }
 
     .custom-hover:hover .img-zoom {
-        transform: scale(1.1);
+        transform: scale(1.08);
     }
 
-    /* --- 4. BADGES & BUTTONS --- */
+    /* --- 3. TEXT & PRICING --- */
+    .category-text {
+        font-size: 0.65rem;
+        color: #94a3b8;
+        font-weight: 700;
+        letter-spacing: 1.2px;
+    }
+
+    .product-title a {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1a1625 !important;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .price-current {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #1a1625;
+    }
+
+    .price-old {
+        font-size: 0.85rem;
+        color: #94a3b8;
+        text-decoration: line-through;
+    }
+
+    /* --- 4. BUTTON TAMBAH (BLACK & PURPLE ACCENT) --- */
+    .btn-add-cart {
+        background: #1a1625 !important; /* Hitam Dasar */
+        color: #ffffff !important;
+        border: 1px solid rgba(99, 102, 241, 0.2) !important; /* Aksen Ungu Halus */
+        padding: 12px;
+        border-radius: 14px;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .btn-add-cart i {
+        color: #818cf8; /* Ikon Ungu GadgetPro */
+        transition: all 0.3s ease;
+    }
+
+    .btn-add-cart:hover:not(:disabled) {
+        background: #2d263f !important; /* Hitam agak ungu saat hover */
+        border-color: #6366f1 !important; /* Border Ungu Nyala */
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.2) !important; /* Glow Ungu */
+        transform: translateY(-2px);
+    }
+
+    .btn-add-cart:hover i {
+        color: #ffffff; /* Ikon jadi putih saat hover */
+        transform: rotate(-10deg);
+    }
+
+    .btn-add-cart:active {
+        transform: scale(0.96);
+    }
+
+    .btn-add-cart:disabled {
+        background: #e2e8f0 !important;
+        color: #94a3b8 !important;
+        border: none !important;
+        cursor: not-allowed;
+    }
+
+    /* --- 5. OTHER ELEMENTS --- */
     .badge-sale {
         background: #ef4444;
-        color: white;
-        padding: 8px 14px;
         border-radius: 50px;
-        font-weight: 700;
         font-size: 0.7rem;
-        z-index: 2;
+        padding: 6px 12px;
     }
 
     .btn-wishlist {
+        background: white;
         border: none;
-        background: var(--bg-card) !important;
-        color: var(--text-main) !important;
-        width: 38px;
-        height: 38px;
+        width: 36px;
+        height: 36px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        z-index: 5;
         transition: 0.2s;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+        z-index: 10;
     }
 
-    .btn-wishlist:hover { transform: scale(1.15); }
-
-    /* --- 5. TEXT & PRICING --- */
-    .category-text {
-        font-size: 0.65rem;
-        color: var(--text-light);
-        font-weight: 700;
-        letter-spacing: 1.5px;
+    .btn-wishlist:hover {
+        transform: scale(1.1);
+        background: #f5f3ff;
     }
 
-    .product-title a {
-        font-size: 0.95rem;
-        line-height: 1.4;
-        font-weight: 700;
-        color: var(--text-main) !important;
-        transition: color 0.2s;
-    }
-
-    .product-title a:hover { color: var(--primary-color) !important; }
-
-    .price-old {
-        font-size: 0.8rem;
-        color: var(--text-light);
-        text-decoration: line-through;
-    }
-
-    .price-current {
-        font-size: 1.2rem;
-        font-weight: 800;
-        color: var(--text-main);
-    }
-
-    /* --- 6. STOCK STATUS --- */
     .stock-badge {
         font-size: 0.7rem;
-        padding: 6px 12px;
-        border-radius: 8px;
         font-weight: 700;
-        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 6px;
     }
+    .stock-low { background: #fff1f2; color: #e11d48; }
+    .stock-out { background: #f1f5f9; color: #64748b; }
 
-    .stock-low { background: #fff9db; color: #f08c00; }
-    .stock-out { background: #f1f2f6; color: #747d8c; }
-
-    [data-bs-theme="dark"] .stock-low { background: rgba(240, 140, 0, 0.15); color: #ffd43b; }
-    [data-bs-theme="dark"] .stock-out { background: rgba(255, 255, 255, 0.05); color: #94a3b8; }
-
-    /* --- 7. BUTTON ADD TO CART (FIX UNGU) --- */
-    .btn-add-cart {
-        background: var(--primary-color) !important;
-        color: white !important;
-        border: none !important;
-        padding: 12px;
-        border-radius: 14px;
-        font-size: 0.8rem;
-        transition: all 0.3s;
-        box-shadow: none !important;
+    /* Dark Mode Support */
+    [data-bs-theme="dark"] .product-card {
+        background: #1a1625 !important;
+        border-color: rgba(255,255,255,0.05) !important;
     }
-
-    .btn-add-cart:hover:not(:disabled) {
-        filter: brightness(1.1);
-        transform: translateY(-2px);
-    }
-
-    .btn-add-cart:active {
-        transform: scale(0.95);
-        filter: brightness(0.9);
-    }
-
-    .btn-add-cart:disabled {
-        background: var(--border-color) !important;
-        color: var(--text-light) !important;
-        cursor: not-allowed;
+    [data-bs-theme="dark"] .product-title a,
+    [data-bs-theme="dark"] .price-current {
+        color: #ffffff !important;
     }
 </style>

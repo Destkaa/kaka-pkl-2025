@@ -1,8 +1,6 @@
-@extends('layouts.app')
+<?php $__env->startSection('title', 'GadgetPro - Solusi Teknologi Terdepan'); ?>
 
-@section('title', 'GadgetPro - Solusi Teknologi Terdepan')
-
-@push('styles')
+<?php $__env->startPush('styles'); ?>
 <style>
     /* 1. Typography & Colors */
     :root {
@@ -122,10 +120,10 @@
     .w-fit { width: fit-content; }
     .btn-pill { border-radius: 50px; padding: 14px 32px; font-weight: 700; }
 </style>
-@endpush
+<?php $__env->stopPush(); ?>
 
-@section('content')
-    {{-- Hero Section --}}
+<?php $__env->startSection('content'); ?>
+    
     <section class="hero-section py-5 mb-5">
         <div class="container py-lg-5">
             <div class="row align-items-center gy-5">
@@ -145,7 +143,7 @@
                     </p>
 
                     <div class="d-flex gap-3 flex-wrap">
-                        <a href="{{ route('catalog.index') }}" class="btn btn-gadget-pro shadow-sm">
+                        <a href="<?php echo e(route('catalog.index')); ?>" class="btn btn-gadget-pro shadow-sm">
                             <i class="bi bi-rocket-takeoff-fill"></i> Mulai Belanja
                         </a>
                         <a href="#promo" class="btn btn-outline-dark btn-pill">Promo Hari Ini</a>
@@ -169,7 +167,7 @@
         </div>
     </section>
 
-    {{-- Kategori Populer --}}
+    
     <section class="section-padding pt-0">
         <div class="container">
             <div class="text-center mb-5">
@@ -178,25 +176,25 @@
             </div>
             
             <div class="row g-4 justify-content-center">
-                @foreach($categories as $category)
+                <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                     <div class="col-6 col-md-4 col-lg-2">
-                        <a href="{{ route('catalog.index', ['category' => $category->slug]) }}" class="text-decoration-none text-dark">
+                        <a href="<?php echo e(route('catalog.index', ['category' => $category->slug])); ?>" class="text-decoration-none text-dark">
                             <div class="card custom-card text-center h-100 p-4 shadow-sm border-0">
                                 <div class="mx-auto mb-3" style="width: 70px; height: 70px; background: var(--gadget-soft); border-radius: 18px; display: flex; align-items: center; justify-content: center;">
-                                    <img src="https://api.dicebear.com/7.x/identicon/svg?seed={{ $category->name }}" 
-                                         alt="{{ $category->name }}" style="width: 80%; height: 80%;">
+                                    <img src="https://api.dicebear.com/7.x/identicon/svg?seed=<?php echo e($category->name); ?>" 
+                                         alt="<?php echo e($category->name); ?>" style="width: 80%; height: 80%;">
                                 </div>
-                                <h6 class="fw-bold mb-1 text-truncate">{{ $category->name }}</h6>
-                                <small class="text-muted small">{{ $category->products_count ?? 0 }} Produk</small>
+                                <h6 class="fw-bold mb-1 text-truncate"><?php echo e($category->name); ?></h6>
+                                <small class="text-muted small"><?php echo e($category->products_count ?? 0); ?> Produk</small>
                             </div>
                         </a>
                     </div>
-                @endforeach
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </div>
         </div>
     </section>
 
-    {{-- Promo Banner --}}
+    
     <section class="section-padding bg-light" id="promo">
         <div class="container">
             <div class="row g-4">
@@ -205,7 +203,7 @@
                          style="background-color: var(--gadget-dark); border-radius: 30px; border: 1px solid rgba(99, 102, 241, 0.2);">
                         <h3 class="fw-bold mb-2 text-warning">Flash Sale! ⚡</h3>
                         <p class="opacity-75 mb-4">Potongan harga hingga 30% untuk semua aksesoris GadgetPro.</p>
-                        <a href="{{ route('catalog.index') }}" class="btn btn-warning btn-pill w-fit fw-bold text-dark">Gunakan Promo</a>
+                        <a href="<?php echo e(route('catalog.index')); ?>" class="btn btn-warning btn-pill w-fit fw-bold text-dark">Gunakan Promo</a>
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -213,30 +211,50 @@
                          style="background: linear-gradient(45deg, var(--gadget-purple), #a855f7); color: white; border-radius: 30px;">
                         <h3 class="fw-bold mb-2">Member Rewards ✨</h3>
                         <p class="opacity-75 mb-4">Dapatkan poin belanja yang bisa ditukar dengan voucher fisik.</p>
-                        <a href="{{ route('register') }}" class="btn btn-light btn-pill w-fit text-dark fw-bold">Daftar Member</a>
+                        <a href="<?php echo e(route('register')); ?>" class="btn btn-light btn-pill w-fit text-dark fw-bold">Daftar Member</a>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    {{-- Produk Unggulan --}}
+    
     <section class="section-padding">
         <div class="container">
             <div class="d-flex justify-content-between align-items-center mb-5">
                 <h2 class="fw-bold mb-0">Rekomendasi Pro</h2>
-                <a href="{{ route('catalog.index') }}" class="text-decoration-none fw-bold" style="color: var(--gadget-purple);">
+                <a href="<?php echo e(route('catalog.index')); ?>" class="text-decoration-none fw-bold" style="color: var(--gadget-purple);">
                     Lihat Semua <i class="bi bi-arrow-right ms-1"></i>
                 </a>
             </div>
             <div class="row g-4">
-                @foreach($featuredProducts as $product)
+                <?php $__currentLoopData = $featuredProducts; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $product): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                     <div class="col-6 col-md-4 col-lg-3">
-                        {{-- Memanggil komponen card yang sudah kita buat tadi --}}
-                        <x-product-card :product="$product" />
+                        
+                        <?php if (isset($component)) { $__componentOriginal3fd2897c1d6a149cdb97b41db9ff827a = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal3fd2897c1d6a149cdb97b41db9ff827a = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.product-card','data' => ['product' => $product]] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('product-card'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes(['product' => \Illuminate\View\Compilers\BladeCompiler::sanitizeComponentAttribute($product)]); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal3fd2897c1d6a149cdb97b41db9ff827a)): ?>
+<?php $attributes = $__attributesOriginal3fd2897c1d6a149cdb97b41db9ff827a; ?>
+<?php unset($__attributesOriginal3fd2897c1d6a149cdb97b41db9ff827a); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal3fd2897c1d6a149cdb97b41db9ff827a)): ?>
+<?php $component = $__componentOriginal3fd2897c1d6a149cdb97b41db9ff827a; ?>
+<?php unset($__componentOriginal3fd2897c1d6a149cdb97b41db9ff827a); ?>
+<?php endif; ?>
                     </div>
-                @endforeach
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </div>
         </div>
     </section>
-@endsection
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\gadget-murah\resources\views/home.blade.php ENDPATH**/ ?>

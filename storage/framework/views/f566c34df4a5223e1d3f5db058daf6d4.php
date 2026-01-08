@@ -1,7 +1,5 @@
 
 
-
-
 <?php $__env->startSection('content'); ?>
 <style>
     /* Custom Styling untuk Katalog Gadget */
@@ -24,12 +22,22 @@
         margin-bottom: 6px;
         font-size: 0.9rem;
         border: 1px solid transparent;
+        cursor: pointer;
     }
 
     .category-link:hover {
-        background-color: #f9fafb;
+        background-color: #f3f4f6;
         color: #1a1a1a;
         transform: translateX(4px);
+    }
+
+    .category-link i {
+        font-size: 1.1rem;
+        transition: transform 0.3s ease;
+    }
+
+    .category-link:hover i {
+        transform: scale(1.2);
     }
 
     .category-link.active {
@@ -37,6 +45,17 @@
         color: #ffffff !important;
         font-weight: 600;
         box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .category-link.active i {
+        color: #ffffff !important;
+        animation: pulse-icon 2s infinite;
+    }
+
+    @keyframes pulse-icon {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
     }
 
     .category-link.active .badge {
@@ -110,28 +129,32 @@
                             <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <?php
                                 $name = strtolower($cat->name);
-                                // Logika Ikon Berdasarkan Nama Kategori
                                 $icon = 'bi-device-ssd'; // Default ikon
+                                
+                                // Logika Ikon Berdasarkan Nama (Lebih Spesifik)
                                 if(str_contains($name, 'phone') || str_contains($name, 'hp') || str_contains($name, 'mobile')) $icon = 'bi-smartphone';
-                                elseif(str_contains($name, 'laptop') || str_contains($name, 'notebook')) $icon = 'bi-laptop';
+                                elseif(str_contains($name, 'iphone') || str_contains($name, 'apple')) $icon = 'bi-apple';
+                                elseif(str_contains($name, 'android') || str_contains($name, 'samsung')) $icon = 'bi-android2';
+                                elseif(str_contains($name, 'laptop') || str_contains($name, 'notebook') || str_contains($name, 'macbook')) $icon = 'bi-laptop';
                                 elseif(str_contains($name, 'pc') || str_contains($name, 'komputer') || str_contains($name, 'desktop')) $icon = 'bi-display';
                                 elseif(str_contains($name, 'audio') || str_contains($name, 'headset') || str_contains($name, 'earphone')) $icon = 'bi-headphones';
                                 elseif(str_contains($name, 'watch') || str_contains($name, 'wearable')) $icon = 'bi-smartwatch';
-                                elseif(str_contains($name, 'camera') || str_contains($name, 'kamera')) $icon = 'bi-camera';
-                                elseif(str_contains($name, 'acc') || str_contains($name, 'kabel') || str_contains($name, 'aksesoris')) $icon = 'bi-usb-c';
+                                elseif(str_contains($name, 'camera') || str_contains($name, 'kamera')) $icon = 'bi-camera-fill';
+                                elseif(str_contains($name, 'tablet') || str_contains($name, 'ipad')) $icon = 'bi-tablet';
+                                elseif(str_contains($name, 'acc') || str_contains($name, 'kabel') || str_contains($name, 'aksesoris')) $icon = 'bi-usb-c-fill';
                             ?>
 
                             <div class="position-relative">
                                 <input class="d-none" type="radio" name="category" value="<?php echo e($cat->slug); ?>" id="cat-<?php echo e($cat->id); ?>"
                                        <?php echo e(request('category') == $cat->slug ? 'checked' : ''); ?> onchange="this.form.submit()">
                                 
-                                <label for="cat-<?php echo e($cat->id); ?>" class="category-link cursor-pointer w-100 <?php echo e(request('category') == $cat->slug ? 'active' : ''); ?>">
+                                <label for="cat-<?php echo e($cat->id); ?>" class="category-link w-100 <?php echo e(request('category') == $cat->slug ? 'active' : ''); ?>">
                                     <span>
                                         <i class="bi <?php echo e($icon); ?> me-2"></i> <?php echo e($cat->name); ?>
 
                                     </span>
                                     <span class="badge rounded-pill bg-light text-muted fw-normal">
-                                        <?php echo e($cat->active_products_count ?? $cat->products_count); ?>
+                                        <?php echo e($cat->products_count ?? $cat->active_products_count); ?>
 
                                     </span>
                                 </label>
@@ -183,7 +206,7 @@
 
                 
                 <div class="d-flex align-items-center gap-2">
-                    <form method="GET">
+                    <form method="GET" id="sortForm">
                         <?php $__currentLoopData = request()->except('sort'); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $value): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <input type="hidden" name="<?php echo e($key); ?>" value="<?php echo e($value); ?>">
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>

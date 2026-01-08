@@ -8,7 +8,7 @@
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-2">
                         <li class="breadcrumb-item"><a href="{{ route('cart.index') }}" class="text-decoration-none text-muted">Keranjang</a></li>
-                        <li class="breadcrumb-item active fw-bold text-primary" aria-current="page">Checkout</li>
+                        <li class="breadcrumb-item active fw-bold text-dark" aria-current="page">Checkout</li>
                     </ol>
                 </nav>
                 <h1 class="h3 fw-bold text-dark">Selesaikan Pesanan</h1>
@@ -23,7 +23,7 @@
                     <div class="card border-0 shadow-sm rounded-4 mb-4">
                         <div class="card-body p-4">
                             <div class="d-flex align-items-center mb-4">
-                                <div class="icon-shape bg-primary-light text-primary rounded-circle me-3">
+                                <div class="icon-shape bg-dark text-white rounded-circle me-3">
                                     <i class="bi bi-truck"></i>
                                 </div>
                                 <h5 class="mb-0 fw-bold">Detail Pengiriman</h5>
@@ -63,16 +63,14 @@
                                 @php $calculatedTotal = 0; @endphp
                                 @foreach($cart->items as $item)
                                     @php 
-                                        // FIX: Gunakan display_price agar diskon ikut terhitung!
                                         $currentPrice = $item->product->display_price ?? 0;
                                         $itemSubtotal = $currentPrice * $item->quantity; 
                                         $calculatedTotal += $itemSubtotal;
                                     @endphp
                                     <div class="d-flex align-items-center mb-3">
                                         <div class="product-img-mini rounded-3 me-3">
-                                            {{-- FIX: Gunakan image_url yang sudah kita buat di Model --}}
                                             <img src="{{ $item->product->image_url }}" alt="" class="img-fluid rounded-3">
-                                            <span class="qty-badge">{{ $item->quantity }}</span>
+                                            <span class="qty-badge bg-dark">{{ $item->quantity }}</span>
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="mb-0 small fw-bold text-dark text-truncate" style="max-width: 150px;">
@@ -86,7 +84,7 @@
                                             @endif
                                         </div>
                                         <div class="text-end">
-                                            <span class="small fw-bold">Rp {{ number_format($itemSubtotal, 0, ',', '.') }}</span>
+                                            <span class="small fw-bold text-dark">Rp {{ number_format($itemSubtotal, 0, ',', '.') }}</span>
                                         </div>
                                     </div>
                                 @endforeach
@@ -94,26 +92,26 @@
 
                             <div class="price-breakdown border-top pt-3">
                                 <div class="d-flex justify-content-between mb-2">
-                                    <span class="text-muted">Subtotal</span>
-                                    <span class="text-dark fw-bold">Rp {{ number_format($calculatedTotal, 0, ',', '.') }}</span>
+                                    <span class="text-muted small">Subtotal</span>
+                                    <span class="text-dark fw-bold small">Rp {{ number_format($calculatedTotal, 0, ',', '.') }}</span>
                                 </div>
                                 <div class="d-flex justify-content-between mb-2">
-                                    <span class="text-muted">Biaya Pengiriman</span>
-                                    <span class="text-success fw-bold">Gratis</span>
+                                    <span class="text-muted small">Biaya Pengiriman</span>
+                                    <span class="text-success fw-bold small">Gratis</span>
                                 </div>
                                 <hr class="dashed my-3">
                                 <div class="d-flex justify-content-between align-items-center mb-4">
-                                    <span class="h5 mb-0 fw-bold">Total Tagihan</span>
-                                    <span class="h4 mb-0 fw-extrabold text-primary">Rp {{ number_format($calculatedTotal, 0, ',', '.') }}</span>
+                                    <span class="h6 mb-0 fw-bold">Total Tagihan</span>
+                                    <span class="h5 mb-0 fw-extrabold text-dark">Rp {{ number_format($calculatedTotal, 0, ',', '.') }}</span>
                                 </div>
                             </div>
 
-                            <button type="submit" class="btn btn-primary btn-lg w-100 rounded-3 py-3 fw-bold shadow-primary border-0">
+                            <button type="submit" class="btn btn-dark btn-lg w-100 rounded-3 py-3 fw-bold shadow-dark border-0">
                                 <i class="bi bi-lock-fill me-2"></i> Bayar Sekarang
                             </button>
                             
                             <p class="text-center mt-3 mb-0 small text-muted">
-                                <i class="bi bi-shield-check me-1"></i> Pembayaran aman & terenkripsi
+                                <i class="bi bi-shield-check-fill me-1 text-success"></i> Pembayaran aman & terenkripsi
                             </p>
                         </div>
                     </div>
@@ -126,6 +124,7 @@
 <style>
     body { background-color: #f8fbff; }
     .fw-extrabold { font-weight: 800; }
+    
     .custom-input {
         padding: 0.75rem 1rem;
         border: 1.5px solid #eef2f7;
@@ -133,16 +132,18 @@
         transition: all 0.3s ease;
         background-color: #fdfdfd;
     }
+    
     .custom-input:focus {
-        border-color: #0d6efd;
-        box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1);
+        border-color: #1a1625;
+        box-shadow: 0 0 0 4px rgba(26, 22, 37, 0.05);
         background-color: #fff;
     }
+
     .icon-shape {
         width: 40px; height: 40px;
         display: flex; align-items: center; justify-content: center;
     }
-    .bg-primary-light { background-color: rgba(13, 110, 253, 0.1); }
+
     .product-img-mini {
         width: 54px; height: 54px;
         background-color: #fff;
@@ -150,16 +151,34 @@
         border: 1px solid #eef2f7;
         display: flex; align-items: center; justify-content: center;
     }
+
     .product-img-mini img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
     .qty-badge {
         position: absolute; top: -8px; right: -8px;
-        background-color: #0d6efd; color: white;
+        color: white;
         font-size: 10px; padding: 2px 7px;
         border-radius: 50%; font-weight: bold;
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
-    .shadow-primary { box-shadow: 0 10px 20px rgba(13, 110, 253, 0.2); }
-    hr.dashed { border-top: 2px dashed #eef2f7; background: none; }
+
+    /* DARK BUTTON STYLE */
+    .btn-dark {
+        background-color: #1a1625;
+        transition: all 0.3s ease;
+    }
+
+    .btn-dark:hover {
+        background-color: #000;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .shadow-dark { 
+        box-shadow: 0 10px 20px rgba(26, 22, 37, 0.15); 
+    }
+
+    hr.dashed { border-top: 2px dashed #eef2f7; background: none; opacity: 1; }
     .rounded-4 { border-radius: 1rem !important; }
 </style>
 @endsection

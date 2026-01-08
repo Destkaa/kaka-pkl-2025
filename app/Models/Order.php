@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,16 +20,18 @@ class Order extends Model
         'shipping_address',
         'payment_status',
         'snap_token',
-        'status',
+        'status', // <--- INI WAJIB ADA, tadi di kode kamu belum ada!
     ];
+
+    // ==================== RELATIONSHIPS ====================
+    
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function items()
     {
         return $this->hasMany(OrderItem::class);
-    }
-
-    public function user()
-    {
-        return $this->belongsTo(User::class);
     }
 }
