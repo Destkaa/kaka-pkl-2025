@@ -92,12 +92,17 @@ Route::middleware('auth')->group(function () {
     Route::controller(ProfileController::class)->group(function () {
         Route::get('/profile', 'edit')->name('profile.edit');
         Route::patch('/profile', 'update')->name('profile.update');
-        Route::put('/profile', 'update'); 
         Route::delete('/profile', 'destroy')->name('profile.destroy');
         Route::delete('/profile/google/unlink', 'unlinkGoogle')->name('profile.google.unlink');
         Route::patch('/profile/avatar', 'updateAvatar')->name('profile.avatar.update');
         Route::delete('/profile/avatar', 'deleteAvatar')->name('profile.avatar.destroy');
-        Route::put('/profile/password', 'updatePassword')->name('profile.password.update');
+        
+        /**
+         * Route untuk Update Password khusus profil.
+         * Menggunakan nama unik 'profile.password.change' untuk menghindari tabrakan 
+         * dengan route 'password.update' bawaan Laravel UI/Auth::routes().
+         */
+        Route::put('/profile/password-change', 'updatePassword')->name('profile.password.change');
     });
 });
 
@@ -120,8 +125,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
     Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
 
-    // Manajemen User & Laporan
-    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    // Manajemen User
+    Route::resource('users', UserController::class);
+    
+    // Manajemen Laporan
     Route::get('/reports/sales', [ReportController::class, 'sales'])->name('reports.sales');
     Route::get('/reports/sales/export', [ReportController::class, 'exportSales'])->name('reports.export-sales');
 });

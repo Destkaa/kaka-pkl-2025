@@ -1,18 +1,43 @@
 
 
-<?php $__env->startSection('title', 'Manajemen Pengguna'); ?>
+<?php $__env->startSection('title', 'User Directory - GadgetPro'); ?>
 
 <?php $__env->startSection('content'); ?>
-<div class="container-fluid px-4">
+<div class="container-fluid px-4 py-3">
     
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 mt-3">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 mt-3">
         <div>
             <h2 class="fw-bolder text-dark mb-1" style="letter-spacing: -1px;">User Directory</h2>
             <p class="text-muted small mb-0">Total <?php echo e($users->total()); ?> akun terdaftar dalam sistem.</p>
         </div>
-        <button class="btn btn-dark rounded-pill px-4 py-2 fw-bold shadow-sm mt-3 mt-md-0 d-flex align-items-center">
-            <i class="bi bi-plus-lg me-2"></i> Create New User
-        </button>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            <button class="btn btn-outline-dark rounded-pill px-3 fw-bold shadow-sm d-flex align-items-center">
+                <i class="bi bi-download me-2"></i> Export
+            </button>
+            <button class="btn btn-dark rounded-pill px-4 py-2 fw-bold shadow-sm d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#createUserModal">
+                <i class="bi bi-plus-lg me-2"></i> Create New User
+            </button>
+        </div>
+    </div>
+
+    
+    <div class="row mb-4 g-3">
+        <div class="col-md-8">
+            <form action="<?php echo e(route('admin.users.index')); ?>" method="GET">
+                <div class="input-group bg-white rounded-pill shadow-sm border px-3 py-1">
+                    <span class="input-group-text bg-transparent border-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="search" class="form-control bg-transparent border-0 ps-0" 
+                        placeholder="Cari nama, email, atau peran..." value="<?php echo e(request('search')); ?>">
+                </div>
+            </form>
+        </div>
+        <div class="col-md-4">
+            <select class="form-select rounded-pill shadow-sm border-1 py-2 px-3 fw-medium">
+                <option value="">Semua Peran Akses</option>
+                <option value="1">Administrator</option>
+                <option value="0">Standard User</option>
+            </select>
+        </div>
     </div>
 
     
@@ -21,7 +46,7 @@
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead>
-                        <tr>
+                        <tr class="bg-light">
                             <th class="ps-4 py-4 text-muted small fw-bold text-uppercase">Member</th>
                             <th class="py-4 text-muted small fw-bold text-uppercase">Email Address</th>
                             <th class="py-4 text-muted small fw-bold text-uppercase">Access Role</th>
@@ -36,9 +61,9 @@
                                 <div class="d-flex align-items-center">
                                     <div class="modern-avatar me-3">
                                         <?php if($user->avatar): ?>
-                                            <img src="<?php echo e(Storage::url($user->avatar)); ?>" class="rounded-circle object-fit-cover w-100 h-100 border">
+                                            <img src="<?php echo e(Storage::url($user->avatar)); ?>" class="rounded-circle object-fit-cover w-100 h-100 border shadow-sm">
                                         <?php else: ?>
-                                            <div class="avatar-placeholder">
+                                            <div class="avatar-placeholder shadow-sm">
                                                 <?php echo e(strtoupper(substr($user->name, 0, 1))); ?>
 
                                             </div>
@@ -75,13 +100,21 @@
                             <td class="pe-4 text-end">
                                 <div class="dropdown">
                                     <button class="btn btn-action-minimal" data-bs-toggle="dropdown">
-                                        <i class="bi bi-three-dots-vertical"></i>
+                                        <i class="bi bi-three-dots-vertical text-dark"></i>
                                     </button>
-                                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3">
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3">
                                         <li><a class="dropdown-item py-2 small fw-medium" href="#"><i class="bi bi-pencil me-2 text-warning"></i> Edit Profile</a></li>
                                         <li><a class="dropdown-item py-2 small fw-medium" href="#"><i class="bi bi-shield-lock me-2 text-info"></i> Reset Password</a></li>
                                         <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item py-2 small text-danger fw-medium" href="#"><i class="bi bi-trash3 me-2"></i> Remove Access</a></li>
+                                        <li>
+                                            <form action="#" method="POST" onsubmit="return confirm('Hapus akses pengguna ini?')">
+                                                <?php echo csrf_field(); ?>
+                                                <?php echo method_field('DELETE'); ?>
+                                                <button type="submit" class="dropdown-item py-2 small text-danger fw-medium">
+                                                    <i class="bi bi-trash3 me-2"></i> Remove Access
+                                                </button>
+                                            </form>
+                                        </li>
                                     </ul>
                                 </div>
                             </td>
@@ -91,7 +124,7 @@
                             <td colspan="5" class="text-center py-5">
                                 <div class="py-4">
                                     <i class="bi bi-people display-1 text-muted opacity-25"></i>
-                                    <p class="text-muted mt-3">No members found in the directory.</p>
+                                    <p class="text-muted mt-3">Tidak ada member ditemukan.</p>
                                 </div>
                             </td>
                         </tr>
@@ -120,105 +153,123 @@
     </div>
 </div>
 
+
+<div class="modal fade" id="createUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0 rounded-4">
+            <div class="modal-header px-4 py-3 border-bottom-0">
+                <h5 class="modal-title fw-bold text-dark">Add New Member</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="#" method="POST">
+                <?php echo csrf_field(); ?>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Full Name</label>
+                        <input type="text" name="name" class="form-control rounded-3" placeholder="Contoh: John Doe" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Email Address</label>
+                        <input type="email" name="email" class="form-control rounded-3" placeholder="name@example.com" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Role Akses</label>
+                        <select name="is_admin" class="form-select rounded-3">
+                            <option value="0">Standard User</option>
+                            <option value="1">Administrator</option>
+                        </select>
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label small fw-bold">Password</label>
+                        <input type="password" name="password" class="form-control rounded-3" required>
+                        <small class="text-muted">Password minimal 8 karakter.</small>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 px-4 pb-4 mt-n2">
+                    <button type="button" class="btn btn-light rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-dark rounded-pill px-4 fw-bold shadow">Create Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <style>
-    /* 1. Global & Card Refinement */
+    /* Global Styling */
     body { background-color: #f8fafc; }
-    .card { border: 1px solid rgba(0,0,0,.05) !important; }
+    .card { border-radius: 16px !important; }
     
-    /* 2. Modern Avatar */
+    /* Input & Search Styling */
+    .input-group:focus-within {
+        border-color: #0f172a !important;
+        box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.05) !important;
+    }
+    .form-control:focus, .form-select:focus {
+        box-shadow: none !important;
+        border-color: #cbd5e1;
+    }
+
+    /* Modern Avatar */
     .modern-avatar {
-        width: 40px;
-        height: 40px;
+        width: 44px;
+        height: 44px;
         position: relative;
     }
     .avatar-placeholder {
-        width: 100%;
-        height: 100%;
-        background-color: #f1f5f9;
+        width: 100%; height: 100%;
+        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
         color: #475569;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        border-radius: 50%;
-        border: 1px solid #e2e8f0;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; border-radius: 50%;
+        border: 2px solid #fff;
     }
 
-    /* 3. Role Dot Indicator */
-    .dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-    }
-    .bg-light-dark { background-color: #cbd5e1; }
-
-    /* 4. Action Button Minimalist */
-    .btn-action-minimal {
-        background: transparent;
-        border: none;
-        color: #94a3b8;
-        padding: 5px 10px;
-        transition: all 0.2s;
-    }
-    .btn-action-minimal:hover {
-        color: #0f172a;
-        background-color: #f1f5f9;
-        border-radius: 8px;
-    }
-
-    /* 5. Badge Dot Status */
+    /* Status Badges */
     .badge-dot-status {
         font-size: 0.75rem;
-        font-weight: 600;
-        padding: 4px 12px;
-        border-radius: 6px;
+        font-weight: 700;
+        padding: 5px 14px;
+        border-radius: 8px;
     }
-    .badge-dot-status.active { background-color: #ecfdf5; color: #059669; }
-    .badge-dot-status.inactive { background-color: #fef2f2; color: #dc2626; }
+    .badge-dot-status.active { background-color: #dcfce7; color: #166534; }
+    .badge-dot-status.inactive { background-color: #fee2e2; color: #991b1b; }
 
-    /* 6. Typography & Table */
+    /* Table Typography */
     .table thead th {
-        background-color: #fff;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.03em;
+        font-size: 0.75rem;
         border-bottom: 1px solid #f1f5f9;
+        background-color: #fbfcfd;
     }
-    tr:hover { background-color: #fafafa !important; }
-    .x-small { font-size: 0.7rem; }
+    .x-small { font-size: 0.72rem; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .bg-light-dark { background-color: #94a3b8; }
 
-    /* 7. CUSTOM MODERN PAGINATION (MATCHING PREVIOUS PAGES) */
-    .pagination {
-        display: flex;
-        gap: 6px;
-        margin-bottom: 0;
+    /* Action Minimalist */
+    .btn-action-minimal {
+        background: transparent; border: none;
+        color: #64748b; padding: 6px 10px;
+        transition: 0.2s; border-radius: 8px;
     }
-    .pagination .page-item .page-link {
-        border: none;
-        border-radius: 10px !important;
-        padding: 8px 16px;
-        font-weight: 600;
-        color: #495057;
-        background-color: #f8f9fa;
-        transition: all 0.2s ease;
-        font-size: 0.875rem;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    .btn-action-minimal:hover { background-color: #f1f5f9; color: #000; }
+
+    /* Custom Pagination */
+    .pagination { gap: 5px; }
+    .pagination .page-link {
+        border: none; border-radius: 8px !important;
+        padding: 8px 14px; font-weight: 600;
+        color: #475569; background-color: #fff;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     }
     .pagination .page-item.active .page-link {
-        background-color: #111 !important; /* Warna Hitam */
+        background-color: #0f172a !important;
         color: #fff !important;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-    }
-    .pagination .page-item:not(.active):hover .page-link {
-        background-color: #e9ecef;
-        color: #111;
-        transform: translateY(-2px);
-    }
-    .pagination .page-item.disabled .page-link {
-        background-color: transparent;
-        color: #ced4da;
     }
 
-    /* 8. Dropdown Styling */
-    .dropdown-item:active { background-color: #0f172a; }
+    /* Dropdown Styling */
+    .dropdown-menu { min-width: 180px; padding: 8px; }
+    .dropdown-item { border-radius: 6px; }
+    .dropdown-item:hover { background-color: #f8fafc; }
 </style>
 <?php $__env->stopSection(); ?>
 <?php echo $__env->make('layouts.admin', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\gadget-murah\resources\views/admin/users/index.blade.php ENDPATH**/ ?>

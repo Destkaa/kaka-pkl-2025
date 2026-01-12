@@ -132,7 +132,7 @@
                                 $icon = 'bi-device-ssd'; // Default ikon
                                 
                                 // Logika Ikon Berdasarkan Nama (Lebih Spesifik)
-                                if(str_contains($name, 'phone') || str_contains($name, 'hp') || str_contains($name, 'mobile')) $icon = 'bi-smartphone';
+                                if(str_contains($name, 'phone') || str_contains($name, 'hp') || str_contains($name, 'mobile')) $icon = 'bi-phone';
                                 elseif(str_contains($name, 'iphone') || str_contains($name, 'apple')) $icon = 'bi-apple';
                                 elseif(str_contains($name, 'android') || str_contains($name, 'samsung')) $icon = 'bi-android2';
                                 elseif(str_contains($name, 'laptop') || str_contains($name, 'notebook') || str_contains($name, 'macbook')) $icon = 'bi-laptop';

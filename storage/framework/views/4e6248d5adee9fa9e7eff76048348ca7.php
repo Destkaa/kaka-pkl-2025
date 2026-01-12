@@ -144,7 +144,7 @@
 
                     </div>
                     <div class="text-success small fw-bold">
-                        <i class="bi bi-graph-up-arrow me-1"></i> Total omzet periode ini
+                        <i class="bi bi-graph-up-arrow me-1"></i> Total omset periode ini
                     </div>
                     <i class="bi bi-currency-dollar stat-icon-bg"></i>
                 </div>

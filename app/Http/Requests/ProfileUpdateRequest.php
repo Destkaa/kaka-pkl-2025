@@ -8,39 +8,33 @@ use Illuminate\Validation\Rule;
 
 class ProfileUpdateRequest extends FormRequest
 {
-    /**
-     * Izinkan user untuk melakukan request ini.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Aturan validasi.
-     */
     public function rules(): array
     {
         return [
             /**
-             * 'required_without:avatar' artinya:
-             * Field ini wajib diisi HANYA JIKA 'avatar' tidak ada dalam request.
-             * Jadi saat klik "Simpan Foto", Laravel tidak akan mencari 'name'.
+             * Menggunakan 'sometimes' adalah kunci utamanya.
+             * Validasi hanya akan berjalan JIKA field 'name' atau 'email' ada di dalam form.
+             * Jika sedang update password, field ini tidak dikirim, maka akan dilewati.
              */
             'name' => [
-                'nullable', 
+                'sometimes', 
+                'required', 
                 'string', 
-                'max:255', 
-                'required_without:avatar'
+                'max:255'
             ],
 
             'email' => [
-                'nullable',
+                'sometimes',
+                'required',
                 'string',
                 'lowercase',
                 'email',
                 'max:255',
-                'required_without:avatar',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
 
@@ -67,23 +61,18 @@ class ProfileUpdateRequest extends FormRequest
         ];
     }
 
-    /**
-     * Custom error messages.
-     */
     public function messages(): array
     {
         return [
-            'name.required_without'  => 'Nama wajib diisi jika tidak sedang mengupdate foto.',
-            'email.required_without' => 'Email wajib diisi jika tidak sedang mengupdate foto.',
-            'phone.regex'            => 'Format nomor telepon tidak valid.',
-            'avatar.max'             => 'Ukuran foto maksimal 2MB.',
-            'avatar.dimensions'      => 'Dimensi foto tidak sesuai.',
+            'name.required'     => 'Nama lengkap wajib diisi.',
+            'email.required'    => 'Alamat email wajib diisi.',
+            'email.unique'      => 'Email sudah terdaftar gunakan email lain.',
+            'phone.regex'       => 'Format nomor telepon tidak valid (Gunakan format 08xx atau +628xx).',
+            'avatar.max'        => 'Ukuran foto maksimal 2MB.',
+            'avatar.dimensions' => 'Dimensi foto minimal 100x100px dan maksimal 2000x2000px.',
         ];
     }
 
-    /**
-     * Nama atribut untuk pesan error.
-     */
     public function attributes(): array
     {
         return [

@@ -6,6 +6,7 @@ use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -28,36 +29,24 @@ class ProfileController extends Controller
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $user = $request->user();
-
-        // 1. Ambil data yang sudah divalidasi dari ProfileUpdateRequest
-        // Ini mencakup name, email, phone, address, dan avatar
         $validatedData = $request->validated();
 
-        // 2. Isi data teks ke dalam model (name, email, phone, address)
-        // fill() hanya akan mengisi field yang terdaftar di $fillable pada Model User
         $user->fill($validatedData);
 
-        // 3. Cek jika email berubah, maka reset verifikasi
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
         }
 
-        // 4. Handle Upload Avatar secara manual
         if ($request->hasFile('avatar')) {
-            // Hapus foto lama jika ada untuk menghemat penyimpanan
             if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
                 Storage::disk('public')->delete($user->avatar);
             }
 
-            // Simpan file baru dengan nama unik
             $filename = 'avatar-' . $user->id . '-' . time() . '.' . $request->file('avatar')->extension();
             $path = $request->file('avatar')->storeAs('avatars', $filename, 'public');
-
-            // Set path ke properti avatar (ini yang memastikan DB tidak NULL)
             $user->avatar = $path;
         }
 
-        // 5. Simpan perubahan ke Database
         $user->save();
 
         return Redirect::route('profile.edit')
@@ -65,38 +54,39 @@ class ProfileController extends Controller
     }
 
     /**
-     * Menghapus avatar (kembali ke inisial).
+     * Menghapus avatar.
      */
     public function deleteAvatar(Request $request): RedirectResponse
     {
         $user = $request->user();
-
         if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
             Storage::disk('public')->delete($user->avatar);
-            
-            // Update kolom avatar menjadi NULL di database
             $user->avatar = null;
             $user->save();
         }
-
         return back()->with('success', 'Foto profil berhasil dihapus.');
     }
 
     /**
-     * Update password user.
+     * Update password user (VERSI PERBAIKAN).
      */
     public function updatePassword(Request $request): RedirectResponse
     {
-        $validated = $request->validateWithBag('updatePassword', [
+        // Menggunakan validate standar agar eksekusi berhenti jika konfirmasi salah
+        $validated = $request->validate([
             'current_password' => ['required', 'current_password'],
-            'password'         => ['required', 'confirmed', 'min:8'],
+            'password' => ['required', 'confirmed', 'min:8'],
+        ], [
+            'current_password.current_password' => 'Password saat ini salah.',
+            'password.confirmed' => 'Konfirmasi password baru tidak cocok.',
+            'password.min' => 'Password minimal 8 karakter.'
         ]);
 
         $request->user()->update([
-            'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
+            'password' => Hash::make($validated['password']),
         ]);
 
-        return back()->with('status', 'password-updated');
+        return back()->with('success', 'Password berhasil diperbarui!');
     }
 
     /**
@@ -104,12 +94,11 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        $request->validateWithBag('userDeletion', [
+        $request->validate([
             'password' => ['required', 'current_password'],
         ]);
 
         $user = $request->user();
-
         Auth::logout();
 
         if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
@@ -117,7 +106,6 @@ class ProfileController extends Controller
         }
 
         $user->delete();
-
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

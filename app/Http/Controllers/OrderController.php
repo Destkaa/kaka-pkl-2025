@@ -1,66 +1,79 @@
 <?php
-// app/Http/Controllers/OrderController.php
 
 namespace App\Http\Controllers;
 
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Midtrans\Config;
+use Midtrans\Transaction;
 
 class OrderController extends Controller
 {
     /**
-     * Menampilkan daftar pesanan milik user yang sedang login.
+     * Menampilkan daftar pesanan (Mengatasi error BadMethodCallException)
      */
     public function index()
     {
-        // PENTING: Jangan gunakan Order::all() !
-        // Kita hanya mengambil order milik user yg sedang login menggunakan relasi hasMany.
-        // auth()->user()->orders() akan otomatis memfilter: WHERE user_id = current_user_id
+        // Mengambil order milik user yang login, diurutkan dari yang terbaru
         $orders = auth()->user()->orders()
-            ->with(['items.product']) // Eager Load nested: Order -> OrderItems -> Product
-            ->latest() // Urutkan dari pesanan terbaru
-            ->paginate(10);
+            ->latest()
+            ->paginate(10); // Sesuai dengan $orders->links() di Blade Anda
 
         return view('orders.index', compact('orders'));
     }
 
     /**
-     * Menampilkan detail satu pesanan.
+     * Menampilkan detail pesanan (Halaman show)
      */
     public function show(Order $order)
     {
-        // 1. Authorize (Security Check)
-        // User A TIDAK BOLEH melihat pesanan User B.
-        // Kita cek apakah ID pemilik order sama dengan ID user yang login.
         if ($order->user_id !== auth()->id()) {
-            abort(403, 'Anda tidak memiliki akses ke pesanan ini.');
+            abort(403, 'Akses ditolak.');
         }
 
-        // 2. Load relasi detail
-        // Kita butuh data items dan gambar produknya untuk ditampilkan di invoice view.
-        $order->load(['items.product', 'items.product.primaryImage']);
+        // Eager load items dan product agar tidak terjadi N+1 query
+        $order->load(['items.product']);
 
         return view('orders.show', compact('order'));
     }
 
     /**
-     * Menampilkan halaman status pembayaran sukses.
+     * Halaman Sukses & Auto-Update Status
      */
     public function success(Order $order)
     {
         if ($order->user_id !== auth()->id()) {
-            abort(403, 'Anda tidak memiliki akses ke pesanan ini.');
+            abort(403);
         }
+
+        // Konfigurasi Midtrans untuk pengecekan status manual (Pull)
+        Config::$serverKey = config('services.midtrans.server_key');
+        Config::$isProduction = config('services.midtrans.is_production');
+
+        try {
+            $status = Transaction::status($order->order_number);
+
+            // Jika status lunas di Midtrans, pastikan database lokal ikut update
+            if (in_array($status->transaction_status, ['settlement', 'capture'])) {
+                $order->update([
+                    'payment_status' => 'paid',
+                    'status'         => 'processing'
+                ]);
+            }
+        } catch (\Exception $e) {
+            // Jika koneksi gagal, biarkan saja (Webhook akan handle)
+        }
+
         return view('orders.success', compact('order'));
     }
 
     /**
-     * Menampilkan halaman status pembayaran pending.
+     * Halaman Pending
      */
     public function pending(Order $order)
     {
         if ($order->user_id !== auth()->id()) {
-            abort(403, 'Anda tidak memiliki akses ke pesanan ini.');
+            abort(403);
         }
         return view('orders.pending', compact('order'));
     }

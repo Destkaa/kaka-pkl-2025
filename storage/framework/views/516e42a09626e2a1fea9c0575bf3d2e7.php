@@ -1,4 +1,4 @@
-{{-- resources/views/profile/partials/update-password-form.blade.php --}}
+
 
 <div class="card border-0 shadow-sm rounded-4">
     <div class="card-body p-4">
@@ -7,58 +7,100 @@
             <p class="text-muted small">Perbarui kata sandi Anda secara berkala untuk menjaga keamanan data pribadi.</p>
         </div>
 
-        <form method="post" action="{{ route('profile.password.change') }}">
-            @csrf
-            @method('put')
+        <form method="post" action="<?php echo e(route('profile.password.change')); ?>">
+            <?php echo csrf_field(); ?>
+            <?php echo method_field('put'); ?>
 
-            {{-- Password Saat Ini --}}
+            
             <div class="mb-3">
                 <label for="current_password" class="form-label small fw-bold text-uppercase tracking-wider text-secondary">Password Saat Ini</label>
                 <div class="input-group modern-input-group">
                     <input type="password" name="current_password" id="current_password"
-                        class="form-control border-end-0 @error('current_password') is-invalid @enderror"
+                        class="form-control border-end-0 <?php $__errorArgs = ['current_password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
                         autocomplete="current-password" placeholder="Masukkan password lama">
                     <button class="btn btn-outline-light border-start-0 text-muted toggle-password" type="button" data-target="current_password">
                         <i class="bi bi-eye"></i>
                     </button>
                 </div>
-                @error('current_password')
-                    <div class="text-danger extra-small mt-1 fw-medium">{{ $message }}</div>
-                @enderror
+                <?php $__errorArgs = ['current_password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <div class="text-danger extra-small mt-1 fw-medium"><?php echo e($message); ?></div>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
             </div>
 
             <hr class="my-4 opacity-10">
 
-            {{-- Password Baru --}}
+            
             <div class="mb-3">
                 <label for="password" class="form-label small fw-bold text-uppercase tracking-wider text-secondary">Password Baru</label>
                 <div class="input-group modern-input-group">
                     <input type="password" name="password" id="password"
-                        class="form-control border-end-0 @error('password') is-invalid @enderror" 
+                        class="form-control border-end-0 <?php $__errorArgs = ['password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" 
                         autocomplete="new-password" placeholder="Minimal 8 karakter">
                     <button class="btn btn-outline-light border-start-0 text-muted toggle-password" type="button" data-target="password">
                         <i class="bi bi-eye"></i>
                     </button>
                 </div>
-                @error('password')
-                    <div class="text-danger extra-small mt-1 fw-medium">{{ $message }}</div>
-                @enderror
+                <?php $__errorArgs = ['password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <div class="text-danger extra-small mt-1 fw-medium"><?php echo e($message); ?></div>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
             </div>
 
-            {{-- Konfirmasi Password Baru --}}
+            
             <div class="mb-4">
                 <label for="password_confirmation" class="form-label small fw-bold text-uppercase tracking-wider text-secondary">Konfirmasi Password</label>
                 <div class="input-group modern-input-group">
                     <input type="password" name="password_confirmation" id="password_confirmation"
-                        class="form-control border-end-0 @error('password_confirmation') is-invalid @enderror"
+                        class="form-control border-end-0 <?php $__errorArgs = ['password_confirmation'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
                         autocomplete="new-password" placeholder="Ulangi password baru">
                     <button class="btn btn-outline-light border-start-0 text-muted toggle-password" type="button" data-target="password_confirmation">
                         <i class="bi bi-eye"></i>
                     </button>
                 </div>
-                @error('password_confirmation')
-                    <div class="text-danger extra-small mt-1 fw-medium">{{ $message }}</div>
-                @enderror
+                <?php $__errorArgs = ['password_confirmation'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <div class="text-danger extra-small mt-1 fw-medium"><?php echo e($message); ?></div>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
             </div>
 
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mt-4">
@@ -66,11 +108,11 @@
                     Simpan Perubahan
                 </button>
 
-                @if (session('status') === 'password-updated')
+                <?php if(session('status') === 'password-updated'): ?>
                     <span class="text-success small fw-medium">
                         <i class="bi bi-check-circle-fill me-1"></i> Berhasil diperbarui
                     </span>
-                @endif
+                <?php endif; ?>
             </div>
         </form>
     </div>
@@ -147,4 +189,4 @@
             });
         });
     });
-</script>
+</script><?php /**PATH C:\xampp\htdocs\gadget-murah\resources\views/profile/partials/update-password-form.blade.php ENDPATH**/ ?>
